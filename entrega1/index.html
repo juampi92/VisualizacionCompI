@@ -1,0 +1,67 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="">
+		<meta name="author" content="">
+		<link rel="shortcut icon" href="../assets/favicon.ico">
+
+		<title>Visualización Computacional I (primera entrega)</title>
+	
+		<link href="../engine/css/bootstrap.min.css" rel="stylesheet">
+		<link href="../engine/css/style.css" rel="stylesheet">
+		<link href="style.css" rel="stylesheet">
+	</head>
+	<body>
+		<div id="wrapper">
+
+	        <!-- Sidebar -->
+	        <div id="sidebar-wrapper">
+	            <ul class="sidebar-nav">
+	                <li class="sidebar-brand">
+	                	<a class="navbar-brand" style="text-align:center;">
+	                		<b>VisCompI</b> (HTML5) <br><small><b>Práctico 1</b></small>
+	                	</a>
+	                </li>
+	                <li id="HGTfetchFile">
+	                	<h3>Explorar HGT</h3>
+	                	<input type="file" id="HGTfileInput"/>
+	                </li>
+	                <li id="HGTsettings" style="display:none;">
+	                	<h3>HGT</h3>
+						<a><b>X</b> <small>Archivo.hgt</small></a>
+
+	                	<h3>Paleta</h3>
+	                	<div id="paletaSelect">
+		                	<h5>Elegir</h5>
+		                	<select id="palletSelect">
+		                		<option value="default">Default</option>
+		                		<option value="mapafisico">Mapa Físico</option>
+		                	</select>
+		                	<button class="btn btn-primary btn-sm">Cargar</button>
+		                	<h5>Explorar</h5>
+		                	<input type="file" id="paletteInput"/>
+		                </div>
+		                <div id="paletaSelected" style="display:none;">
+							<a id="paleta"><b>X</b> <small>Archivo.json</small></a>
+		                </div>
+	                	<!--<h3>Transición suave</h3>
+	                	<input type="checkbox" id="softTransition">-->
+						<h3>Dibujar</h3>
+	                	<button class="btn btn-primary" name="render">Renderizar</button>
+	                </li>
+	            </ul>
+	        </div>
+
+	        <!-- Page content -->
+	        <div id="page-content-wrapper">
+				<canvas id="canvas"></canvas>
+	        </div>
+	    </div>		
+
+		<script src="../engine/js/jquery.min.js"></script>
+		<script src="../engine/js/engine.js"></script>
+		<script src="script.js"></script>
+	</body>
+</html>
