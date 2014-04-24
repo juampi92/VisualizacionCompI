@@ -49,15 +49,24 @@
 					process = new engine.Process(img);
 
 				img.create( HGT.properties.w , HGT.properties.h );
-				var it = 0;
+
+				var max = 0;
+				for (var ite = 0; ite < HGT.array.length; ite++)
+					max = Math.max(HGT.array[ite],max);
+				HGT.properties.max = max;
+
+				var it = 0,
+					factor_max = HGT.paleta.json[HGT.paleta.json.length-1][0];
+
 				process.loop(function(i,x,y){
 
-					var altura = HGT.array[it];
+					var altura = HGT.array[it],
+						factor = factor_max * (altura / max );
 					it++;
 					// "Montecarlo"
 					var j = 0;
 					for (j = 0; j < HGT.paleta.json.length-1; j++)
-						if ( altura < HGT.paleta.json[j][0] ) return HGT.paleta.json[j][1];
+						if ( factor < HGT.paleta.json[j][0] ) return HGT.paleta.json[j][1];
 
 					return HGT.paleta.json[j][1];
 				});
@@ -74,7 +83,6 @@
 				var max = 0;
 				for (var ite = 0; ite < HGT.array.length; ite++)
 					max = Math.max(HGT.array[ite],max);
-
 				HGT.properties.max = max;
 
 				var it = 0;
