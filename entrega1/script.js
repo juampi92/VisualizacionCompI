@@ -66,7 +66,7 @@
 					// "Montecarlo"
 					var j = 0;
 					for (j = 0; j < HGT.paleta.json.length-1; j++)
-						if ( factor < HGT.paleta.json[j][0] ) return HGT.paleta.json[j][1];
+						if ( factor <= HGT.paleta.json[j][0] ) return HGT.paleta.json[j][1];
 
 					return HGT.paleta.json[j][1];
 				});
