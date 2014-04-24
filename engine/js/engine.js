@@ -21,11 +21,22 @@ var engine = {};
 			// Clear screen
 			if ( ! keep ) engine.MyCanvas.reset();
 			
+			// Resize to fit Image:
+			/*if ( engine.MyCanvas.el.width < imag.width ) {
+				var ratio = engine.MyCanvas.el.width / imag.width;
+				imag.width = engine.MyCanvas.el.width;
+				imag.height = imag.height * ratio;
+			} else if ( engine.MyCanvas.el.height < imag.height ){
+				var ratio = engine.MyCanvas.el.height / imag.height;
+				imag.height = engine.MyCanvas.el.height;
+				imag.width = imag.width * ratio;
+			}*/ // Aprender a hacer resize en imagen
+
 			// Center image:
 			var x = ( engine.MyCanvas.el.width - imag.width ) / 2,
 				y = ( engine.MyCanvas.el.height - imag.height ) / 2;
 
-			engine.MyCanvas.context.putImageData( imag.imgData , x,y );
+			iengine.MyCanvas.context.putImageData( imag.imgData , x,y );
 		},
 		getCurrentData: function(){
 			return this.context.getImageData(0, 0, engine.MyCanvas.el.width, engine.MyCanvas.el.height);
@@ -144,6 +155,8 @@ var engine = {};
 			    i += 4;
     		}
 	};
+
+	engine.Imagen.prototype.resize = function(newWidth,newHeight){};
 
 	engine.Imagen.prototype.getBase64 = function(){
 		var canvas = document.createElement('canvas');

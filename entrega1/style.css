@@ -124,3 +124,19 @@ ul.sidebar-nav input[type="file"] {
 	line-height: 13px;
 	margin-top: -3px;
 }
+
+#HGTsettings ul#datos{
+  color:#EEE;
+  padding:5px;
+  padding-left: 8px;
+}
+
+#HGTsettings ul#datos li{
+  list-style: none;
+  padding: 2px;
+  line-height: 20px;
+}
+
+#HGTsettings ul#datos li span{
+  color:#AAA;
+}

@@ -10,7 +10,14 @@
 		calculateProp: function(){
 			if ( !HGT.loaded ) return;
 			HGT.properties.w = HGT.properties.h = Math.sqrt(HGT.array.length);
-			HGT.properties.max = 0;
+
+			var max = 0;
+			for (var i = 0; i < HGT.array.length; i++)
+					max = Math.max(HGT.array[i],max);
+			HGT.properties.max = max;
+
+			// Render this
+			UI.setHGTprop(HGT.properties.w , HGT.properties.max);
 		},
 		iniciate: function(arrayBuffer){
 			HGT.array = new Uint16Array(arrayBuffer); // Ancho de palabra de 16 bits sin signo
@@ -50,18 +57,13 @@
 
 				img.create( HGT.properties.w , HGT.properties.h );
 
-				var max = 0;
-				for (var ite = 0; ite < HGT.array.length; ite++)
-					max = Math.max(HGT.array[ite],max);
-				HGT.properties.max = max;
-
 				var it = 0,
 					factor_max = HGT.paleta.json[HGT.paleta.json.length-1][0];
 
 				process.loop(function(i,x,y){
 
 					var altura = HGT.array[it],
-						factor = factor_max * (altura / max );
+						factor = factor_max * (altura / HGT.properties.max );
 					it++;
 					// "Montecarlo"
 					var j = 0;
@@ -79,17 +81,11 @@
 
 				img.create( HGT.properties.w , HGT.properties.h );
 
-				// Buscar el maximo:
-				var max = 0;
-				for (var ite = 0; ite < HGT.array.length; ite++)
-					max = Math.max(HGT.array[ite],max);
-				HGT.properties.max = max;
-
 				var it = 0;
 				process.loop(function(i,x,y){
 
 					var altura = HGT.array[it],
-						color = 255 * (altura / max);
+						color = 255 * (altura / HGT.properties.max);
 
 					it++;
 					
@@ -205,6 +201,11 @@
 				this.$els.paleta.divs.selected.hide();
 				this.$els.paleta.divs.select.show();
 			}
+		},
+		setHGTprop: function(w,max){
+			var $lis = this.$els.HGT.settings.find('ul#datos li');
+			$lis.eq(0).find('span').html(w+"x"+w);
+			$lis.eq(1).find('span').html(max);
 		}
 	};
 
