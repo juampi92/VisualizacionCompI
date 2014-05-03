@@ -11,8 +11,9 @@ var engine = {};
 			this.context = this.el.getContext('2d');
 
 			// Inicializar canvas
-			this.el.width = $(this.el).parent().innerWidth();
-			this.el.height = window.innerHeight-40;
+			var $parent = $(this.el).parent();
+			this.el.width = $parent.innerWidth();
+			this.el.height = $parent.innerHeight() - 50;
 		},
 		reset: function(){
 			this.el.width = this.el.width;
@@ -36,7 +37,7 @@ var engine = {};
 			var x = ( engine.MyCanvas.el.width - imag.width ) / 2,
 				y = ( engine.MyCanvas.el.height - imag.height ) / 2;
 
-			iengine.MyCanvas.context.putImageData( imag.imgData , x,y );
+			engine.MyCanvas.context.putImageData( imag.imgData , x,y );
 		},
 		getCurrentData: function(){
 			return this.context.getImageData(0, 0, engine.MyCanvas.el.width, engine.MyCanvas.el.height);
