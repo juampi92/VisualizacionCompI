@@ -12,8 +12,8 @@ var engine = {};
 
 			// Inicializar canvas
 			var $parent = $(this.el).parent();
-			this.el.width = $parent.innerWidth();
-			this.el.height = $parent.innerHeight() - 50;
+			/*this.el.width = $parent.innerWidth() - 30;
+			this.el.height = $parent.innerHeight() - 50;*/
 		},
 		reset: function(){
 			this.el.width = this.el.width;
@@ -33,11 +33,13 @@ var engine = {};
 				imag.width = imag.width * ratio;
 			}*/ // Aprender a hacer resize en imagen
 
-			// Center image:
-			var x = ( engine.MyCanvas.el.width - imag.width ) / 2,
-				y = ( engine.MyCanvas.el.height - imag.height ) / 2;
+			this.el.width = imag.width;
+			this.el.height = imag.height;
 
-			engine.MyCanvas.context.putImageData( imag.imgData , x,y );
+			/*var x = ( engine.MyCanvas.el.width - imag.width ) / 2,
+				y = ( engine.MyCanvas.el.height - imag.height ) / 2;*/
+
+			engine.MyCanvas.context.putImageData( imag.imgData , 0,0 );
 		},
 		getCurrentData: function(){
 			return this.context.getImageData(0, 0, engine.MyCanvas.el.width, engine.MyCanvas.el.height);
