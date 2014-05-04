@@ -6,6 +6,7 @@
 		loaded: false,
 		array: null,
 		file: null,
+		busy: false,
 		properties: {},
 		calculateProp: function(){
 			if ( !HGT.loaded ) return;
@@ -47,16 +48,23 @@
 			HGT.properties = {};
 		},
 		render: function(){
-			if ( !HGT.loaded ) return;
+			if ( !HGT.loaded || HGT.busy ) return alert("El HGT está ocupado");
+			HGT.busy = true;
+			
+			var img = new engine.Imagen();
+				process = new engine.Process(img);
+
+			// Al terminar de procesar:
+			process.on("end",function(){
+				HGT.busy = false;
+				process.render();
+			});
+
+			img.create( HGT.properties.w , HGT.properties.h );
 
 			if ( HGT.paleta.loaded ) {
 			// Usar paleta
-				// Crear imagen
-				var img = new engine.Imagen();
-					process = new engine.Process(img);
-
-				img.create( HGT.properties.w , HGT.properties.h );
-
+				
 				var it = 0,
 					factor_max = HGT.paleta.json[HGT.paleta.json.length-1][0];
 
@@ -65,22 +73,12 @@
 					var altura = HGT.array[it],
 						factor = factor_max * (altura / HGT.properties.max );
 					it++;
-					// "Montecarlo"
-					var j = 0;
-					for (j = 0; j < HGT.paleta.json.length-1; j++)
-						if ( factor <= HGT.paleta.json[j][0] ) return HGT.paleta.json[j][1];
 
-					return HGT.paleta.json[j][1];
+					return HGT.paleta.getColor(factor);					
 				});
 
 			} else {
 			// Dinamica
-				// Crear imagen
-				var img = new engine.Imagen();
-					process = new engine.Process(img);
-
-				img.create( HGT.properties.w , HGT.properties.h );
-
 				var it = 0;
 				process.loop(function(i,x,y){
 
@@ -92,13 +90,12 @@
 					return {r:color,g:color,b:color};
 				});
 			}
-
-			process.render();
 		},
 		paleta: {
 			loaded: false,
 			name: "",
 			json: null,
+			suavizado: false,
 			loadFile: function(evt){
 				var f = evt.target.files[0];
 
@@ -129,6 +126,32 @@
 					.fail(function() {
 						alert( "Error al cargar esa paleta" );
 				});
+			},
+			getColor: function(factor){
+				var monte = HGT.paleta.getMontecarlo(factor);
+
+				if ( this.suavizado && monte > 0 && HGT.paleta.json[monte][0] != factor ) {
+					var orig = HGT.paleta.json[monte-1],
+						dest = HGT.paleta.json[monte],
+						c1 = orig[1],
+						c2 = dest[1],
+						dist = dest[0] - orig[0],
+						fact = factor - orig[0];
+					return HGT.paleta.getSuavizado(c1,c2,fact,dist);
+				} else
+					return HGT.paleta.json[monte][1];
+			},
+			getMontecarlo: function(factor){
+				var j = 0;
+				for (j = 0; j < HGT.paleta.json.length-1; j++)
+					if ( factor <= HGT.paleta.json[j][0] ) return j;
+				return j;
+			},
+			getSuavizado: function(c1,c2,factor,dist){
+				var diff = {r: c2.r - c1.r , g: c2.g - c1.g , b: c2.b - c1.b};
+				return {r: c1.r + factor * diff.r / dist ,
+						g: c1.g + factor * diff.g / dist ,
+						b: c1.b + factor * diff.b / dist };
 			},
 			clear: function(){
 				HGT.paleta.loaded = false;
@@ -162,6 +185,7 @@
 			};
 			this.$els.paleta.forms.selectLoad = this.$els.paleta.divs.select.find('button');
 
+			this.$els.HGT.suave = this.$els.HGT.settings.find('input#softTransition');
 			this.$els.HGT.renderButton = this.$els.HGT.settings.find('button[name="render"]');
 
 			this.setEventos();
@@ -181,6 +205,10 @@
 			this.$els.HGT.renderButton.click(function(e){
 				HGT.render();
 			});
+			this.$els.HGT.suave.on('change',function(e){
+				HGT.paleta.suavizado = e.currentTarget.checked;
+			});
+
 			this.$els.HGT.fileInput.on('change',HGT.loadFile);
 			this.$els.paleta.forms.input.on('change',HGT.paleta.loadFile);
 		},

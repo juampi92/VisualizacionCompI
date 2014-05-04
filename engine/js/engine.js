@@ -236,20 +236,23 @@ var engine = {};
 	};
 
 	engine.Process.prototype.loop = function(callback){ // Loop parejo
+		var self = this;
 
-		var pixels_source = this.source.imgData.data,
-    		numPixels = this.source.width * this.source.height;
+		setTimeout(function(){
+			var pixels_source = self.source.imgData.data,
+	    		numPixels = self.source.width * self.source.height;
 
-    	this.source.loop(function(i,x,y,r,g,b){
-    		var rgb = callback(i,x,y);
-		    pixels_source[i] = rgb.r;
-		    pixels_source[i+1] = rgb.g; // Green
-		    pixels_source[i+2] = rgb.b; // Blue
-		    pixels_source[i+3] = 255; // Alpha
-    	});
-    	
-		if ( this.events["end"] ) this.events["end"]();
-		return;
+	    	self.source.loop(function(i,x,y,r,g,b){
+	    		var rgb = callback(i,x,y);
+			    pixels_source[i] = rgb.r;
+			    pixels_source[i+1] = rgb.g; // Green
+			    pixels_source[i+2] = rgb.b; // Blue
+			    pixels_source[i+3] = 255; // Alpha
+	    	});
+	    	
+			if ( self.events["end"] ) self.events["end"]();
+			return;
+		},0);
 	};
 
 	engine.Process.prototype.on = function( trigger , callback ){
