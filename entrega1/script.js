@@ -181,6 +181,10 @@
 				forms: {
 					select: $('select#palletSelect'),
 					input: $('input#paletteInput')
+				},
+				slide: {
+					list: $('ul#paletaShow'),
+					button: $('a#paletaSlide')
 				}
 			};
 			this.$els.paleta.forms.selectLoad = this.$els.paleta.divs.select.find('button');
@@ -209,6 +213,8 @@
 				HGT.paleta.suavizado = e.currentTarget.checked;
 			});
 
+			this.$els.paleta.slide.button.click(UI.paletaSlide);
+
 			this.$els.HGT.fileInput.on('change',HGT.loadFile);
 			this.$els.paleta.forms.input.on('change',HGT.paleta.loadFile);
 		},
@@ -225,6 +231,7 @@
 			if ( ( activate == undefined ) || activate ){
 				this.$els.paleta.divs.select.hide();
 				this.$els.paleta.divs.selected.show();
+				this.paletaDraw();
 			} else {
 				this.$els.paleta.divs.selected.hide();
 				this.$els.paleta.divs.select.show();
@@ -234,6 +241,29 @@
 			var $lis = this.$els.HGT.settings.find('ul#datos li');
 			$lis.eq(0).find('span').html(w+"x"+w);
 			$lis.eq(1).find('span').html(max);
+		},
+		paletaSlide: function(){
+			var lista = UI.$els.paleta.slide.list,
+				boton = UI.$els.paleta.slide.button;
+			if ( boton.hasClass("active") ){
+				boton.removeClass("active");
+				boton.html("Mostrar Paleta");
+				lista.slideUp("slow");
+			} else {
+				boton.addClass("active");
+				lista.slideDown("slow");
+				boton.html("Ocultar Paleta");
+			}
+		},
+		paletaDraw: function(){
+			var $lista = this.$els.paleta.slide.list;
+			
+			$lista.empty();
+			for (var i = 0; i < HGT.paleta.json.length; i++) {
+				var row = HGT.paleta.json[i];
+				$lista.append( $('<li></li>').html('<span class="color" style="background-color:rgb('+
+					row[1].r+','+row[1].g+','+row[1].b+');"></span> ' + row[0]) );
+			};
 		}
 	};
 
