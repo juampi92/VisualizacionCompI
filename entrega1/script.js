@@ -209,9 +209,12 @@
 			this.$els.HGT.renderButton.click(function(e){
 				HGT.render();
 			});
+
 			this.$els.HGT.suave.on('change',function(e){
 				HGT.paleta.suavizado = e.currentTarget.checked;
 			});
+			HGT.paleta.suavizado = this.$els.HGT.suave.checked;
+			console.log(this.$els.HGT.suave[0].checked);
 
 			this.$els.paleta.slide.button.click(UI.paletaSlide);
 
