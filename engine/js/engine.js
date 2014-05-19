@@ -7,11 +7,16 @@ var engine = {};
 	engine.MyCanvas = {
 		el: document.getElementById('canvas'),
 		context: null,
-		init: function(){
+		init: function(w,h){
 			this.context = this.el.getContext('2d');
 
 			// Inicializar canvas
 			var $parent = $(this.el).parent();
+
+			if ( w != undefined ) {
+				this.el.width = w;
+				this.el.height = h;
+			}
 			/*this.el.width = $parent.innerWidth() - 30;
 			this.el.height = $parent.innerHeight() - 50;*/
 		},
@@ -159,6 +164,18 @@ var engine = {};
     		}
 	};
 
+	engine.Imagen.prototype.selectiveLoop = function(from,to,callback){
+		var i = from*4,
+			coords_from = this.getCoordsFromPos(from),
+			coords_to = this.getCoordsFromPos(to);
+
+		for ( var y = coords_from.y ; y < coords_to.y ; y++ )
+    		for ( var x = 0 ; x < this.width ; x++ ){
+    			callback(i,x,y,this.imgData.data[i],this.imgData.data[i+1],this.imgData.data[i+2]);
+			    i += 4;
+    		}
+	};
+
 	engine.Imagen.prototype.resize = function(newWidth,newHeight){};
 
 	engine.Imagen.prototype.getBase64 = function(){
@@ -174,6 +191,10 @@ var engine = {};
 
 	engine.Imagen.prototype.getPixelBase = function(x,y){
 		return ((y - 1) * (this.img.width * 4)) + ((x - 1) * 4);
+	};
+
+	engine.Imagen.prototype.getCoordsFromPos = function(pos){ // IT's NOT DIVIDED BY 4
+		return {y: Math.floor(pos/this.width), x: pos%this.width};
 	};
 
 	engine.Imagen.prototype.getColor = function(x,y) {
@@ -227,7 +248,7 @@ var engine = {};
 	};
 
 	// ************************************************
-	// 						PDI
+	// 						Process
 	// ************************************************
 
 	engine.Process = function( source ){
@@ -241,8 +262,7 @@ var engine = {};
 		var self = this;
 
 		setTimeout(function(){
-			var pixels_source = self.source.imgData.data,
-	    		numPixels = self.source.width * self.source.height;
+			var pixels_source = self.source.imgData.data;
 
 	    	self.source.loop(function(i,x,y,r,g,b){
 	    		var rgb = callback(i,x,y);
@@ -265,3 +285,193 @@ var engine = {};
 	engine.Process.prototype.render = function(){
 		engine.MyCanvas.renderImg(this.source);
 	};
+
+	// ************************************************
+	// 						ProcessMulti
+	// ************************************************
+
+	engine.ProcessMulti = function( worker_url , source , workers_count , func ){
+		this.worker_url = worker_url;
+		this.source = source;
+		this.events = {};
+		this.workers_count = workers_count || 1;
+		this.ready = 0;
+		this.workers = [];
+
+		this.array = new Array();
+		this.func = func;
+
+		this.workers_time = new Array();
+		return this;
+	};
+
+	engine.ProcessMulti.prototype = new engine.Process();
+
+	engine.ProcessMulti.prototype.loop = function(params,start,end,dimensions,paleta){
+		var self = this;
+
+		if ( !window.Worker ) this.workers_count=1;
+
+		// Calcular inicio, fin y tipo de Fractal. No usar "callback"
+		var from = start.y,
+			to = 0,
+			chunks = Math.ceil(end.y / this.workers_count);
+
+		if ( this.workers_count == 1) {
+			if ( ! window.Worker ) console.log("No se utilizarán Web Workers (multi-threads)");
+
+	        // Procesa la funcion deseada
+	        this.array = new Array();
+	        this.array[0] = this.func(params,start,end,dimensions,paleta);
+
+	        this.endLoop();
+	        return;
+	    }
+    	
+	    var _paleta = {json:paleta.json,suav:paleta.suavizado};
+
+		this.workers = [];
+		var dim_chunk = (Math.abs(dimensions.y.e)+Math.abs(dimensions.y.s) ) / this.workers_count,
+			dim_from = dimensions.y.s;
+		
+		for (var j = 0; j < this.workers_count ; j++) {
+			to = Math.min(from+chunks,end.y);
+
+
+			this.workers_time[j] = Date.now();
+
+			var worker = new Worker(this.worker_url);
+		    worker.onmessage = function(e){self.endWork(e)};
+
+		    // Getting the picture
+		    var _start = {x:start.x,y:from},
+		    	_end = {x:end.x,y:to},
+		    	_dimensions = {
+		    		x:dimensions.x,
+		    		y: {
+		    			s: ( dim_from + dim_chunk*j ) ,
+		    			e: ( dim_from + dim_chunk*(j+1) )
+		    		}
+		    	};
+
+		    // Laburá!
+		    worker.postMessage({ 
+		    	params: params,
+		    	start: _start,
+		    	end: _end,
+		    	dimensions: _dimensions,
+		    	paleta: _paleta,
+		    	index:j });
+
+		    from = to;
+		};
+	};
+
+	engine.ProcessMulti.prototype.endWork = function(e){
+		var i = e.data.worker;
+		console.log("Terminado el worker " + i + ". Tiempo total de: " + ( Date.now() - this.workers_time[i] ) +"ms" );
+		this.ready++;
+		this.array[i] = e.data.arr;
+
+		if ( this.ready >= this.workers_count)
+			this.endLoop();
+		return;
+	};
+
+	engine.ProcessMulti.prototype.endLoop = function(){
+		console.log("Terminado el Loop Multi-Thread. Acomodando la imagen");
+		
+		
+		var pixels_source = this.source.imgData.data;
+
+		var punt = 0,
+			tiempo = Date.now();
+
+		var px = 0;
+		for (var i = 0; i < this.array.length; i++)
+			for (var j = 0; j < this.array[i].length; j++) {
+				pixels_source[px] = this.array[i][j];
+				px++;
+			};
+
+		console.log("Retardo en Dibujar: " + (Date.now() - tiempo) + "ms.");
+
+		if (this.events["end"]) this.events["end"]();
+		return;
+	};
+
+	// ************************************************
+	// 						Paleta
+	// ************************************************	
+
+	engine.Paleta = function(UI){
+		this.loaded = false;
+		this.name = "";
+		this.json = null;
+		this.suavizado = false;
+		this.UI = UI;
+	};
+	
+	engine.Paleta.prototype = {
+		loadFile: function(evt){
+			var f = evt.target.files[0];
+
+			if (!f) return alert("Error al tratar de abrir el archivo");
+
+			var r = new FileReader();
+
+			this.name = f.name;
+
+			r.onload = function(e) {
+				this.json = JSON.parse(e.target.result);
+				this.loaded = true;
+				this.UI.paletaSelect(true);
+				this.UI.$els.paleta.divs.current.children('small').html(this.name);
+			};
+			r.readAsText(f);
+		},
+		ajaxFetch: function(dir){
+			var self = this;
+			$.getJSON( "./paletas/" + dir + ".json", function(d) {
+					self.loaded = true;
+					self.name = dir + ".json";
+					self.json = d;
+					self.UI.paletaSelect(true);
+					self.UI.$els.paleta.divs.current.children('small').html(self.name);					
+				})
+				.fail(function() {
+					alert( "Error al cargar esa paleta" );
+			});
+		},
+		getColor: function(factor){
+			var monte = this.getMontecarlo(factor);
+
+			if ( this.suavizado && monte > 0 && this.json[monte][0] != factor ) {
+				var orig = this.json[monte-1],
+					dest = this.json[monte],
+					c1 = orig[1],
+					c2 = dest[1],
+					dist = dest[0] - orig[0],
+					fact = factor - orig[0];
+				return this.getSuavizado(c1,c2,fact,dist);
+			} else
+				return this.json[monte][1];
+		},
+		getMontecarlo: function(factor){
+			var j = 0;
+			for (j = 0; j < this.json.length-1; j++)
+				if ( factor <= this.json[j][0] ) return j;
+			return j;
+		},
+		getSuavizado: function(c1,c2,factor,dist){
+			var diff = {r: c2.r - c1.r , g: c2.g - c1.g , b: c2.b - c1.b};
+			return {r: c1.r + factor * diff.r / dist ,
+					g: c1.g + factor * diff.g / dist ,
+					b: c1.b + factor * diff.b / dist };
+		},
+		clear: function(){
+			this.loaded = false;
+			this.name = "";
+			this.json = null;
+		}
+	}

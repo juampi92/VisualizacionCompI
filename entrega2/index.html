@@ -1,0 +1,77 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="">
+		<meta name="author" content="">
+		<link rel="shortcut icon" href="../assets/favicon.ico">
+
+		<title>Visualización Computacional I (segunda entrega)</title>
+	
+		<link href="../engine/css/bootstrap.min.css" rel="stylesheet">
+		<link href="../engine/css/style.css" rel="stylesheet">
+		<link href="style.css" rel="stylesheet">
+	</head>
+	<body>
+		<div id="wrapper">
+
+	        <!-- Sidebar -->
+	        <div id="sidebar-wrapper">
+	            <ul class="sidebar-nav">
+	                <li class="sidebar-brand">
+	                	<a class="navbar-brand" style="text-align:center;">
+	                		<b>VisCompI</b> (HTML5) <br><small><b>Práctico 2</b></small>
+	                	</a>
+	                </li>
+	                <li id="FractalSettings">
+	                	<h3>Fractal</h3>
+						<div id="fractalType">
+							<a><b>X</b> <small>Mandelbrot</small></a>
+							<select id="tipoFractal" style="display:none;">
+								<option value="" selected>-- Elige Fractal --</option>
+								<option value="mandelbrot">Mandelbrot</option>
+							</select>
+						</div>
+						<h5>Datos</h5>
+						<ul id="datos">
+							<li><b>Resolución: <span>- x -</span></b><br></li>
+							<li><b title="Tiempo de cálculo">Tiempo: <span>- ms</span></b><br></li>
+						</ul>
+
+	                	<h3>Paleta</h3>
+	                	<div id="paletaSelect">
+		                	<h5>Elegir</h5>
+		                	<select id="palletSelect">
+		                		<option value="default">Default</option>
+		                		<option value="grises">Escala de Grises</option>
+		                		<option value="psico">Psicodelico</option>
+		                	</select>
+		                	<button class="btn btn-primary btn-sm">Cargar</button>
+		                	<h5>Explorar</h5>
+		                	<input type="file" id="paletteInput"/>
+		                </div>
+		                <div id="paletaSelected" style="display:none;">
+							<a id="paleta"><b>X</b> <small>Archivo.json</small></a>
+							<ul id="paletaShow"></ul>
+							<a id="paletaSlide">Mostrar paleta</a>
+		                </div>
+		                <h3>Suavizado <input type="checkbox" id="softTransition" checked="false"></h3>
+	                	<h3>Dibujar</h3>
+	                	<button class="btn btn-primary" name="render">Renderizar</button>
+	                </li>
+	            </ul>
+	        </div>
+
+	        <!-- Page content -->
+	        <div id="page-content-wrapper">
+				<canvas id="canvas"></canvas>
+	        </div>
+	    </div>		
+
+		<script src="../engine/js/jquery.min.js"></script>
+		<script src="../engine/js/engine.js"></script>
+		<script src="fractales.js"></script>
+		<script src="script.js"></script>
+	</body>
+</html>

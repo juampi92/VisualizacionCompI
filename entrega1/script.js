@@ -2,7 +2,9 @@
 	if ( !window.File || !window.FileReader || !window.FileList || !window.Blob)
 		return alert('La API de Archivos no es compatible con tu navegador. Considera actualizarlo.');
 
-	var HGT = {
+	var UI,HGT;
+
+	HGT = {
 		loaded: false,
 		array: null,
 		file: null,
@@ -91,79 +93,12 @@
 				});
 			}
 		},
-		paleta: {
-			loaded: false,
-			name: "",
-			json: null,
-			suavizado: false,
-			loadFile: function(evt){
-				var f = evt.target.files[0];
-
-				if (!f) return alert("Error al tratar de abrir el archivo");
-
-				var r = new FileReader();
-
-				HGT.paleta.name = f.name;
-
-				r.onload = function(e) {
-					HGT.paleta.json = JSON.parse(e.target.result);
-					HGT.paleta.loaded = true;
-					UI.paletaSelect(true);
-					UI.$els.paleta.divs.current.children('small').html(HGT.paleta.name);
-				};
-				r.readAsText(f);
-			},
-			ajaxFetch: function(dir){
-				$.getJSON( "./paletas/" + dir + ".json", function(d) {
-						HGT.paleta.loaded = true;
-						HGT.paleta.name = dir + ".json";
-						HGT.paleta.json = d;
-						UI.paletaSelect(true);
-						UI.$els.paleta.divs.current.children('small').html(HGT.paleta.name);
-
-						console.log(HGT.paleta);
-					})
-					.fail(function() {
-						alert( "Error al cargar esa paleta" );
-				});
-			},
-			getColor: function(factor){
-				var monte = HGT.paleta.getMontecarlo(factor);
-
-				if ( this.suavizado && monte > 0 && HGT.paleta.json[monte][0] != factor ) {
-					var orig = HGT.paleta.json[monte-1],
-						dest = HGT.paleta.json[monte],
-						c1 = orig[1],
-						c2 = dest[1],
-						dist = dest[0] - orig[0],
-						fact = factor - orig[0];
-					return HGT.paleta.getSuavizado(c1,c2,fact,dist);
-				} else
-					return HGT.paleta.json[monte][1];
-			},
-			getMontecarlo: function(factor){
-				var j = 0;
-				for (j = 0; j < HGT.paleta.json.length-1; j++)
-					if ( factor <= HGT.paleta.json[j][0] ) return j;
-				return j;
-			},
-			getSuavizado: function(c1,c2,factor,dist){
-				var diff = {r: c2.r - c1.r , g: c2.g - c1.g , b: c2.b - c1.b};
-				return {r: c1.r + factor * diff.r / dist ,
-						g: c1.g + factor * diff.g / dist ,
-						b: c1.b + factor * diff.b / dist };
-			},
-			clear: function(){
-				HGT.paleta.loaded = false;
-				HGT.paleta.name = "";
-				HGT.paleta.json = null;
-			}
-		}
+		paleta: null
 	};
 
 	engine.MyCanvas.init();
 
-	var UI = {
+	UI = {
 		$els: {},
 		init: function(){
 			this.$els.HGT = {};
@@ -214,7 +149,6 @@
 				HGT.paleta.suavizado = e.currentTarget.checked;
 			});
 			HGT.paleta.suavizado = this.$els.HGT.suave.checked;
-			console.log(this.$els.HGT.suave[0].checked);
 
 			this.$els.paleta.slide.button.click(UI.paletaSlide);
 
@@ -270,6 +204,7 @@
 		}
 	};
 
+	HGT.paleta = new engine.Paleta(UI);
 	UI.init();
 
 })();
