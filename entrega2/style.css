@@ -1,5 +1,9 @@
 /* Side Menu */
 
+.cargando{
+  cursor: wait !important;
+}
+
 #wrapper {
   padding-left: 250px;
   transition: all 0.4s ease 0s;
@@ -188,6 +192,15 @@ ul#complejos output{
   color:wheat;
 }
 
+h3 input[type="number"]{
+  margin-top: -5px;
+  padding: 0;
+  padding-left: 5px;
+  margin-left: 70px;
+  width:50px;
+  display:inline-block;
+}
+
 ul#paletaShow {
   display:none;
 }
@@ -210,4 +223,17 @@ ul#paletaShow li span.color{
 canvas {
   border:1px solid black;
 
+}
+
+/* Animation */
+
+.animate{
+  -moz-transition:color 2s , padding 0.5s;
+  -webkit-transition:color 2s , padding 0.5s;
+  -o-transition:color 2s , padding 0.5s;
+  transition:color 2s , padding 0.5s;
+}
+
+.animate.new {
+  color:wheat !important;
 }

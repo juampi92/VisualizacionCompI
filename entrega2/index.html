@@ -36,21 +36,23 @@
 						<h5>Datos</h5>
 						<ul id="datos" class="data">
 							<li><b>Resolución: <span>- x -</span></b></li>
-							<li><b title="Tiempo de cálculo">Tiempo: <span>- ms</span></b></li>
+							<li><b title="Tiempo de cálculo">Tiempo: <span class="animate new">- ms</span></b></li>
 						</ul>
 						
 						<h5>Dimensiones</h5>
 						<ul id="complejos" class="data">
-							<li><span>Inicio:</span> x:<output name="s_x" contenteditable="true"></output>
-								y:<output name="s_y" contenteditable="true"></output>
+							<li><span>Inicio:</span>
+								x:<output name="s_x" class="animate" contenteditable="true"></output>
+								y:<output name="s_y" class="animate" contenteditable="true"></output>
 							</li>
-							<li><span>Fin:</span> x:<output name="e_x" contenteditable="true"></output>
-								y:<output name="e_y" contenteditable="true"></output>
+							<li><span>Fin:</span>
+								x:<output name="e_x" class="animate" contenteditable="true"></output>
+								y:<output name="e_y" class="animate" contenteditable="true"></output>
 								
 							</li>
 						</ul>
 
-						<div id="modes">
+						<div id="modes" style="display:none">
 		                	<h3>Edit</h3>
 							<div class="btn-group" data-toggle="buttons" style="text-indent:0;margin-left:35px;">
 			                  <label class="btn btn-primary active">
@@ -61,6 +63,8 @@
 			                  </label>
 			                </div>
 		                </div>					
+						
+						<h3 title="Threads">Workers <input type="number" class="form-control input-sm" name="workers" min="1" max="20" value="1"></h3>
 
 	                	<h3>Paleta</h3>
 	                	<div id="paletaSelect">

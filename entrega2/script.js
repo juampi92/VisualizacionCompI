@@ -20,6 +20,7 @@
 			Fractal.loaded = true;
 			Fractal.dimensions = fractal[Fractal.tipo].prototype.dim;
 			UI.setFractalprop();
+			UI.setDimensions();
 		},
 		clear: function(){
 			Fractal.loaded = false;
@@ -31,43 +32,51 @@
 			var self = this;
 
 			Fractal.dimensions = UI.getDimensions();
-			console.log(Fractal.dimensions);
 
 			if ( !Fractal.loaded || Fractal.busy ) return alert("El Fractal está ocupado");
+			if ( ! Fractal.paleta.loaded ) return alert("Cargar una paleta");
 			Fractal.busy = true;
+			UI.rendering();
 
-			Fractal.lastTime = Date.now();
+			setTimeout(function(){
+				Fractal.lastTime = Date.now();
 
-			Fractal.imagen = new engine.Imagen();
-			var process = new engine.ProcessMulti("fractal.worker.js",Fractal.imagen,1,FractalProcessing);
+				Fractal.imagen = new engine.Imagen();
+				var process = new engine.ProcessMulti(
+					"fractal.worker.js",
+					Fractal.imagen,
+					UI.getWorkers(),
+					FractalProcessing);
 
-			// Asignar paleta
-			//process.on("paint",function(f){return self.paleta.getColor(f);});
+				// Asignar paleta
+				//process.on("paint",function(f){return self.paleta.getColor(f);});
 
-			// Al terminar de procesar:
-			process.on("end",function(){
-				Fractal.busy = false;
-				Fractal.lastTime = Date.now() - Fractal.lastTime;
-				
-				process.render();
-				console.log("Tiempo: " + Fractal.lastTime);
+				// Al terminar de procesar:
+				process.on("end",function(){
+					Fractal.busy = false;
+					Fractal.lastTime = Date.now() - Fractal.lastTime;
+					
+					process.render();
+					console.log("Tiempo: " + Fractal.lastTime);
+					UI.setFractalprop();
 
-				// Guardar imagen del fractal
-				Fractal.imagen = process.source;				
-				
-			});
+					// Guardar imagen del fractal
+					Fractal.imagen = process.source;				
+					UI.rendered();
+				});
 
-			Fractal.imagen.create( Fractal.properties.width , Fractal.properties.height );
+				Fractal.imagen.create( Fractal.properties.width , Fractal.properties.height );
 
-			//if ( Fractal.paleta.loaded ) {
-			// Usar paleta		
-				process.loop({ fractal_nom: Fractal.tipo },
-					{x:0,y:0},
-					{x:Fractal.properties.width,y:Fractal.properties.height},
-					Fractal.dimensions,
-					Fractal.paleta
-				);
-			//} else return alert("La paleta no está cargada");
+				//if ( Fractal.paleta.loaded ) {
+				// Usar paleta		
+					process.loop({ fractal_nom: Fractal.tipo },
+						{x:0,y:0},
+						{x:Fractal.properties.width,y:Fractal.properties.height},
+						Fractal.dimensions,
+						Fractal.paleta
+					);
+				//} else return alert("La paleta no está cargada");
+			},100);
 		},
 		change: function(){
 			console.log("Cambio");
@@ -86,6 +95,14 @@
 			this.$els.Fractal.selectType = this.$els.Fractal.fetchType.children('select#tipoFractal');
 			this.$els.Fractal.settings = $("#FractalSettings");
 			this.$els.Fractal.complejos = this.$els.Fractal.settings.find('ul#complejos');
+			this.$els.Fractal.dims = {
+				s_x: this.$els.Fractal.complejos.find('output[name="s_x"]'),
+				s_y: this.$els.Fractal.complejos.find('output[name="s_y"]'),
+				e_x: this.$els.Fractal.complejos.find('output[name="e_x"]'),
+				e_y: this.$els.Fractal.complejos.find('output[name="e_y"]')
+			};
+
+			this.$els.Fractal.workers = this.$els.Fractal.settings.find('input[name="workers"]');
 
 			this.$els.paleta = { 
 				divs: {
@@ -106,6 +123,7 @@
 
 			this.$els.Fractal.suave = this.$els.Fractal.settings.find('input#softTransition');
 			this.$els.Fractal.renderButton = this.$els.Fractal.settings.find('button[name="render"]');
+			this.$els.Fractal.renderButton.removeAttr("disabled");
 
 			this.setEventos();
 		},
@@ -157,22 +175,45 @@
 		setFractalprop: function(){
 			var $lis = this.$els.Fractal.settings.find('ul#datos li');
 			$lis.eq(0).find('span').html(Fractal.properties.width+"x"+Fractal.properties.height);
-			$lis.eq(1).find('span').html(Fractal.lastTime + "ms");
-			var $dim = this.$els.Fractal.complejos;
-			$dim.find('output[name="s_x"]').html(Fractal.dimensions.x.s);
-			$dim.find('output[name="s_y"]').html(Fractal.dimensions.y.s);
-			$dim.find('output[name="e_x"]').html(Fractal.dimensions.x.e);
-			$dim.find('output[name="e_y"]').html(Fractal.dimensions.y.e);
+			var $time = $lis.eq(1).children('b');
+			$time.children('span').remove();
+			var $span = $('<span></span>');
+			$span.html(Fractal.lastTime + "ms").addClass("animate new");
+			$time.append( $span );
+			$span.focus().removeClass("new");
+		},
+		setDimensions: function(){
+			this.$els.Fractal.dims.s_x.html(Fractal.dimensions.x.s);
+			this.$els.Fractal.dims.s_y.html(Fractal.dimensions.y.s);
+			this.$els.Fractal.dims.e_x.html(Fractal.dimensions.x.e);
+			this.$els.Fractal.dims.e_y.html(Fractal.dimensions.y.e);
 		},
 		getDimensions: function(){
-			var $dim = this.$els.Fractal.complejos;
+			var $dim = this.$els.Fractal.dims;
 			return ret = {x: {
-					s: parseFloat( $dim.find('output[name="s_x"]').html() ),
-					e: parseFloat( $dim.find('output[name="e_x"]').html() )
+					s: parseFloat( $dim.s_x.html() ),
+					e: parseFloat( $dim.e_x.html() )
 				},y:{
-					s: parseFloat( $dim.find('output[name="s_y"]').html() ),
-					e: parseFloat( $dim.find('output[name="e_y"]').html() )
+					s: parseFloat( $dim.s_y.html() ),
+					e: parseFloat( $dim.e_y.html() )
 				}};
+		},
+		getWorkers: function(){
+			var v = parseInt(this.$els.Fractal.workers.val());
+			if ( v < 1 || v > 20 ) {
+				v = 1;
+				this.$els.Fractal.workers.val(v);
+			}
+			return v;
+		},
+		rendering: function(){
+			UI.$els.Fractal.renderButton.html("... rendering ...").attr("disabled","");
+			$('body').addClass("cargando");
+		},
+		rendered: function(){
+			UI.$els.Fractal.renderButton.html("Render").removeAttr("disabled");
+			$('body').removeClass('cargando');
+			$('#modes').show();
 		},
 		paletaSlide: function(){
 			var lista = UI.$els.paleta.slide.list,
