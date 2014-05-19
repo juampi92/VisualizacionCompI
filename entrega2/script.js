@@ -12,8 +12,13 @@
 			width:500,
 			height:500
 		},
+		dimensions: {
+			x:{s:0,e:0},
+			y:{s:0,e:0}
+		},
 		iniciate: function(){
 			Fractal.loaded = true;
+			Fractal.dimensions = fractal[Fractal.tipo].prototype.dim;
 			UI.setFractalprop();
 		},
 		clear: function(){
@@ -24,6 +29,9 @@
 		},
 		render: function(){
 			var self = this;
+
+			Fractal.dimensions = UI.getDimensions();
+			console.log(Fractal.dimensions);
 
 			if ( !Fractal.loaded || Fractal.busy ) return alert("El Fractal está ocupado");
 			Fractal.busy = true;
@@ -45,8 +53,7 @@
 				console.log("Tiempo: " + Fractal.lastTime);
 
 				// Guardar imagen del fractal
-				Fractal.imagen = process.source;
-				
+				Fractal.imagen = process.source;				
 				
 			});
 
@@ -57,7 +64,7 @@
 				process.loop({ fractal_nom: Fractal.tipo },
 					{x:0,y:0},
 					{x:Fractal.properties.width,y:Fractal.properties.height},
-					{x:{s:-2,e:1},y:{s:-1.5,e:1.5}},
+					Fractal.dimensions,
 					Fractal.paleta
 				);
 			//} else return alert("La paleta no está cargada");
@@ -78,6 +85,7 @@
 			this.$els.Fractal.fileName = this.$els.Fractal.fetchType.children('a:first');
 			this.$els.Fractal.selectType = this.$els.Fractal.fetchType.children('select#tipoFractal');
 			this.$els.Fractal.settings = $("#FractalSettings");
+			this.$els.Fractal.complejos = this.$els.Fractal.settings.find('ul#complejos');
 
 			this.$els.paleta = { 
 				divs: {
@@ -150,6 +158,21 @@
 			var $lis = this.$els.Fractal.settings.find('ul#datos li');
 			$lis.eq(0).find('span').html(Fractal.properties.width+"x"+Fractal.properties.height);
 			$lis.eq(1).find('span').html(Fractal.lastTime + "ms");
+			var $dim = this.$els.Fractal.complejos;
+			$dim.find('output[name="s_x"]').html(Fractal.dimensions.x.s);
+			$dim.find('output[name="s_y"]').html(Fractal.dimensions.y.s);
+			$dim.find('output[name="e_x"]').html(Fractal.dimensions.x.e);
+			$dim.find('output[name="e_y"]').html(Fractal.dimensions.y.e);
+		},
+		getDimensions: function(){
+			var $dim = this.$els.Fractal.complejos;
+			return ret = {x: {
+					s: parseFloat( $dim.find('output[name="s_x"]').html() ),
+					e: parseFloat( $dim.find('output[name="e_x"]').html() )
+				},y:{
+					s: parseFloat( $dim.find('output[name="s_y"]').html() ),
+					e: parseFloat( $dim.find('output[name="e_y"]').html() )
+				}};
 		},
 		paletaSlide: function(){
 			var lista = UI.$els.paleta.slide.list,

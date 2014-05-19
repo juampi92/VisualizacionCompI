@@ -34,10 +34,33 @@
 							</select>
 						</div>
 						<h5>Datos</h5>
-						<ul id="datos">
-							<li><b>Resolución: <span>- x -</span></b><br></li>
-							<li><b title="Tiempo de cálculo">Tiempo: <span>- ms</span></b><br></li>
+						<ul id="datos" class="data">
+							<li><b>Resolución: <span>- x -</span></b></li>
+							<li><b title="Tiempo de cálculo">Tiempo: <span>- ms</span></b></li>
 						</ul>
+						
+						<h5>Dimensiones</h5>
+						<ul id="complejos" class="data">
+							<li><span>Inicio:</span> x:<output name="s_x" contenteditable="true"></output>
+								y:<output name="s_y" contenteditable="true"></output>
+							</li>
+							<li><span>Fin:</span> x:<output name="e_x" contenteditable="true"></output>
+								y:<output name="e_y" contenteditable="true"></output>
+								
+							</li>
+						</ul>
+
+						<div id="modes">
+		                	<h3>Edit</h3>
+							<div class="btn-group" data-toggle="buttons" style="text-indent:0;margin-left:35px;">
+			                  <label class="btn btn-primary active">
+			                    <input type="radio" name="options" value="zoom">Zoom
+			                  </label>
+			                  <label class="btn btn-primary">
+			                    <input type="radio" name="options" value="mover">Mover
+			                  </label>
+			                </div>
+		                </div>					
 
 	                	<h3>Paleta</h3>
 	                	<div id="paletaSelect">
@@ -53,18 +76,21 @@
 		                </div>
 		                <div id="paletaSelected" style="display:none;">
 							<a id="paleta"><b>X</b> <small>Archivo.json</small></a>
+							<h5>Suavizado <input type="checkbox" id="softTransition" checked="false"></h5>
 							<ul id="paletaShow"></ul>
 							<a id="paletaSlide">Mostrar paleta</a>
 		                </div>
-		                <h3>Suavizado <input type="checkbox" id="softTransition" checked="false"></h3>
-	                	<h3>Dibujar</h3>
-	                	<button class="btn btn-primary" name="render">Renderizar</button>
+
+	                	<h3></h3>
+	                	<div style="text-align:right;margin-right:10px">
+	                		<button class="btn btn-primary" name="render">Render</button>
+	                	</div>
 	                </li>
 	            </ul>
 	        </div>
 
 	        <!-- Page content -->
-	        <div id="page-content-wrapper">
+	        <div id="page-content-wrapper" class="unselect">
 				<canvas id="canvas"></canvas>
 	        </div>
 	    </div>		

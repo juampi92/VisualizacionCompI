@@ -70,8 +70,7 @@ fractal.base.prototype.iterar = function(c){
 fractal.mandelbrot = function(){};
 fractal.mandelbrot.prototype = new fractal.base();
 
-fractal.mandelbrot.prototype.start = { x:-2 , y:-1.5 };
-fractal.mandelbrot.prototype.end = { x:1 , y:1.5 };
+fractal.mandelbrot.prototype.dim = {x:{s:-2,e:1},y:{s:-1.5,e:1.5}};
 fractal.mandelbrot.prototype.DIVERGE = 4; // Diverge al cuadrado
 fractal.mandelbrot.prototype.exp = 2;
 

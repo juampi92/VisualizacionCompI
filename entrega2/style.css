@@ -149,20 +149,43 @@ ul.sidebar-nav input[type="file"] {
 	margin-top: -3px;
 }
 
-#FractalSettings ul#datos{
+ul.data{
+
   color:#EEE;
-  padding:5px;
+  padding:2px;
   padding-left: 8px;
 }
 
-#FractalSettings ul#datos li{
+ul.data li{
   list-style: none;
   padding: 2px;
   line-height: 20px;
 }
 
-#FractalSettings ul#datos li span{
+ul#datos li span{
   color:#AAA;
+}
+
+ul#complejos li {
+  font-weight:bold;
+}
+
+ul#complejos li span {
+  font-size:1.2em;
+  font-weight: bold;
+  color:#ccc;
+  width:75px;
+  text-align: left;
+  margin-left: -20px;
+  display:inline-block;
+}
+
+ul#complejos output{
+  text-indent: 3px;
+  text-align: center;
+  display:inline-block;
+  min-width: 40px;
+  color:wheat;
 }
 
 ul#paletaShow {
