@@ -7,6 +7,7 @@
 		imagen: null,
 		tipo: "mandelbrot",
 		busy: false,
+		mode: 0,
 		lastTime: 0,
 		properties: {
 			width:500,
@@ -91,6 +92,26 @@
 
 			UI.setDimensions();
 		},
+		calcularDesplazo: function(x,y){
+			var offset_x = - Fractal.dimensions.x.s,
+				offset_y = - Fractal.dimensions.y.s,
+				w = Fractal.dimensions.x.e - Fractal.dimensions.x.s,
+				h = Fractal.dimensions.y.e - Fractal.dimensions.y.s,
+				desplazo = {
+					h: ( x / Fractal.properties.width ) * w - offset_x - Fractal.dimensions.x.s,
+					v: ( y / Fractal.properties.height ) * h - offset_y - Fractal.dimensions.y.s
+				};
+
+			
+			Fractal.dimensions.x.s += desplazo.h;
+			Fractal.dimensions.y.s += desplazo.v;
+			Fractal.dimensions.x.e += desplazo.h;
+			Fractal.dimensions.y.e += desplazo.v;
+
+			console.log({h:desplazo.h,v:desplazo.v},{x:x,y:y});
+
+			UI.setDimensions();
+		},
 		paleta: null
 	};
 
@@ -111,6 +132,7 @@
 				e_x: this.$els.Fractal.complejos.find('output[name="e_x"]'),
 				e_y: this.$els.Fractal.complejos.find('output[name="e_y"]')
 			};
+			this.$els.Fractal.modo = this.$els.Fractal.settings.find("#modes .btn-group");
 
 			this.$els.Fractal.workers = this.$els.Fractal.settings.find('input[name="workers"]');
 
@@ -160,6 +182,19 @@
 
 			this.$els.paleta.slide.button.click(UI.paletaSlide);
 
+			this.$els.Fractal.modo.on('click','label',function(e){
+				var $this = $(this),
+					selected = $this.children('input').val();
+
+				UI.$els.Fractal.modo.find('label.active').removeClass('active');
+				$this.addClass("active");
+
+				if ( selected == "zoom" )
+					Fractal.mode = 0;
+				else
+					Fractal.mode = 1;
+			});
+
 			this.$els.Fractal.selectType.on('change',UI.typeChange);
 			this.$els.paleta.forms.input.on('change',Fractal.paleta.loadFile);
 
@@ -206,33 +241,47 @@
 				UI.mouse.pressed = false;
 				UI.mouse.endPos = UI.mouse.getCoords(e);
 				
-				var pos = {
+				if ( Fractal.mode == 0 ) {
+					var pos = {
 						x: Math.min(UI.mouse.startPos.x,UI.mouse.endPos.x),
 						y: Math.min(UI.mouse.startPos.y,UI.mouse.endPos.y)
 					},
 					width = Math.max(UI.mouse.startPos.x,UI.mouse.endPos.x) - pos.x,
 					height = Math.max(UI.mouse.startPos.y,UI.mouse.endPos.y) - pos.y;
 
-				Fractal.calcularZoom(pos,Math.max(width,height));
+					Fractal.calcularZoom(pos,Math.max(width,height));
+				} else
+					Fractal.calcularDesplazo(UI.mouse.endPos.x - UI.mouse.startPos.x ,
+											 UI.mouse.endPos.y - UI.mouse.startPos.y);
+
 				Fractal.render();
 			},
 			move: function(e){
 				if ( !UI.mouse.pressed ) return;
 
 				var endPos = UI.mouse.getCoords(e),
-					pos = {
-						x: Math.min(UI.mouse.startPos.x,endPos.x),
-						y: Math.min(UI.mouse.startPos.y,endPos.y)
-					},
-					width = Math.max(UI.mouse.startPos.x,endPos.x) - pos.x,
-					height = Math.max(UI.mouse.startPos.y,endPos.y) - pos.y;
+					startPos = UI.mouse.startPos;
 
 				engine.MyCanvas.renderImg( Fractal.imagen );
 				
 				var context = engine.MyCanvas.context;
 				context.beginPath();
-			    context.rect(pos.x,pos.y, width,height);
-			    context.lineWidth = 2;
+
+				if ( Fractal.mode == 0 ) {
+					var pos = {
+						x: Math.min(startPos.x,endPos.x),
+						y: Math.min(startPos.y,endPos.y)
+					},
+					width = Math.max(startPos.x,endPos.x) - pos.x,
+					height = Math.max(startPos.y,endPos.y) - pos.y;
+
+				    context.rect(pos.x,pos.y, width,height);				    
+				} else {
+					context.moveTo(startPos.x,startPos.y);
+      				context.lineTo(endPos.x,endPos.y);
+				}
+
+				context.lineWidth = 2;
 			    context.strokeStyle = 'red';
 			    context.stroke();
 			}

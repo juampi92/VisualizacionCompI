@@ -231,10 +231,10 @@ canvas {
 /* Animation */
 
 .animate{
-  -moz-transition:color 2s , padding 0.5s;
-  -webkit-transition:color 2s , padding 0.5s;
-  -o-transition:color 2s , padding 0.5s;
-  transition:color 2s , padding 0.5s;
+  -moz-transition:color 3s , padding 0.5s;
+  -webkit-transition:color 3s , padding 0.5s;
+  -o-transition:color 3s , padding 0.5s;
+  transition:color 3s , padding 0.5s;
 }
 
 .animate.new {
