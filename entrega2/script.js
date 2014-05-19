@@ -78,8 +78,18 @@
 				//} else return alert("La paleta no está cargada");
 			},100);
 		},
-		change: function(){
-			console.log("Cambio");
+		calcularZoom: function(pos,medidas){
+			var offset_x = - Fractal.dimensions.x.s,
+				offset_y = - Fractal.dimensions.y.s,
+				w = Fractal.dimensions.x.e - Fractal.dimensions.x.s,
+				h = Fractal.dimensions.y.e - Fractal.dimensions.y.s;
+
+			Fractal.dimensions.x.s = ( pos.x / Fractal.properties.width ) * w - offset_x;
+			Fractal.dimensions.y.s = ( pos.y / Fractal.properties.height ) * h - offset_y;
+			Fractal.dimensions.x.e = ( ( pos.x + medidas ) / Fractal.properties.width ) * w - offset_x;
+			Fractal.dimensions.y.e = ( ( pos.y + medidas ) / Fractal.properties.height ) * h - offset_y;
+
+			UI.setDimensions();
 		},
 		paleta: null
 	};
@@ -150,16 +160,81 @@
 
 			this.$els.paleta.slide.button.click(UI.paletaSlide);
 
-			this.$els.Fractal.selectType.on('change',Fractal.change);
+			this.$els.Fractal.selectType.on('change',UI.typeChange);
 			this.$els.paleta.forms.input.on('change',Fractal.paleta.loadFile);
+
+			// Dispararse en la primera dibujada
+			$(engine.MyCanvas.el).on('mousedown',UI.mouse.down);
+			$(engine.MyCanvas.el).on('mouseup',UI.mouse.up);
+			$(engine.MyCanvas.el).on('mousemove',UI.mouse.move);
+		},
+		typeChange: function(e){
+			var v = $(e.target).val();
+			if ( v != "" ) {
+				UI.fileSelect(true);
+				UI.$els.Fractal.fileName.children('spamm').html(e.target.selectedOptions[0].innerHTML);
+				Fractal.tipo = v;
+			}
 		},
 		fileSelect: function(activate){
 			if ( ( activate == undefined ) || activate ){
 				this.$els.Fractal.fileName.show();
 				this.$els.Fractal.selectType.hide();
 			} else {
-				this.$els.Fractal.selectType.show();
+				this.$els.Fractal.selectType.show().val("Elige Fractal");
 				this.$els.Fractal.fileName.hide();
+			}
+		},
+		mouse: {
+			pressed: false,
+			startPos:{x:0,y:0},
+			endPos:{x:0,y:0},
+			getCoords: function(e){
+				var rect = engine.MyCanvas.el.getBoundingClientRect();
+			    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+			},
+			down: function(e){
+				if ( UI.mouse.pressed ) return UI.mouse.up(e);
+				
+				UI.mouse.pressed = true;
+				UI.mouse.startPos = UI.mouse.getCoords(e);
+				console.log("Mouse Down");
+			},
+			up: function(e){
+				if ( !UI.mouse.pressed ) return;
+
+				UI.mouse.pressed = false;
+				UI.mouse.endPos = UI.mouse.getCoords(e);
+				
+				var pos = {
+						x: Math.min(UI.mouse.startPos.x,UI.mouse.endPos.x),
+						y: Math.min(UI.mouse.startPos.y,UI.mouse.endPos.y)
+					},
+					width = Math.max(UI.mouse.startPos.x,UI.mouse.endPos.x) - pos.x,
+					height = Math.max(UI.mouse.startPos.y,UI.mouse.endPos.y) - pos.y;
+
+				Fractal.calcularZoom(pos,Math.max(width,height));
+				Fractal.render();
+			},
+			move: function(e){
+				if ( !UI.mouse.pressed ) return;
+
+				var endPos = UI.mouse.getCoords(e),
+					pos = {
+						x: Math.min(UI.mouse.startPos.x,endPos.x),
+						y: Math.min(UI.mouse.startPos.y,endPos.y)
+					},
+					width = Math.max(UI.mouse.startPos.x,endPos.x) - pos.x,
+					height = Math.max(UI.mouse.startPos.y,endPos.y) - pos.y;
+
+				engine.MyCanvas.renderImg( Fractal.imagen );
+				
+				var context = engine.MyCanvas.context;
+				context.beginPath();
+			    context.rect(pos.x,pos.y, width,height);
+			    context.lineWidth = 2;
+			    context.strokeStyle = 'red';
+			    context.stroke();
 			}
 		},
 		paletaSelect: function(activate){

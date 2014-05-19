@@ -185,10 +185,13 @@ ul#complejos li span {
 }
 
 ul#complejos output{
-  text-indent: 3px;
+  text-indent: 5px;
   text-align: center;
+  margin:0 5px;
   display:inline-block;
-  min-width: 40px;
+  width: 50px;
+  max-width: 40px;
+  overflow: hidden;
   color:wheat;
 }
 
