@@ -331,7 +331,7 @@ var engine = {};
 	    var _paleta = {json:paleta.json,suav:paleta.suavizado};
 
 		this.workers = [];
-		var dim_chunk = (Math.abs(dimensions.y.e)+Math.abs(dimensions.y.s) ) / this.workers_count,
+		var dim_chunk = (dimensions.y.e-dimensions.y.s) / this.workers_count,
 			dim_from = dimensions.y.s;
 		
 		for (var j = 0; j < this.workers_count ; j++) {
