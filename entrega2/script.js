@@ -380,22 +380,4 @@
 	UI.init();
 	Fractal.iniciate();
 
-
-	function randomColor() {
-		return {
-			r: Math.round(Math.random()*255),
-			g: Math.round(Math.random()*255),
-			b: Math.round(Math.random()*255)
-		};
-	}
-
-	var print = "[";
-	for (var i = 0; i <= 90; i+=4) {
-		var color = randomColor();
-		print = print + '\n\t["'+i+'",{"r":'+color.r+',"g":'+color.g+',"b":'+color.b+'}],';
-	};
-	print = print + "\n]";
-
-	console.log(print);	
-
 })();

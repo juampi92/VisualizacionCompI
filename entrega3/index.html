@@ -1,0 +1,70 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="">
+		<meta name="author" content="">
+		<link rel="shortcut icon" href="../assets/favicon.ico">
+
+		<title>Visualización Computacional I (tercera entrega)</title>
+	
+		<link href="../engine/css/bootstrap.min.css" rel="stylesheet">
+		<link href="../engine/css/style.css" rel="stylesheet">
+		<link href="style.css" rel="stylesheet">
+	</head>
+	<body>
+		<div id="wrapper">
+
+	        <!-- Sidebar -->
+	        <div id="sidebar-wrapper">
+	            <ul class="sidebar-nav">
+	                <li class="sidebar-brand">
+	                	<a class="navbar-brand" style="text-align:center;">
+	                		<b>VisCompI</b> (HTML5) <br><small><b>Práctico 3</b></small>
+	                	</a>
+	                </li>
+	                <li id="ModelfetchFile">
+	                	<h3>Modelo 3D</h3>
+	                	<input type="file"/>
+	                </li>
+	                <li id="ModelSettings" style="display:none;">
+	                	<h3>Modelo 3D</h3>
+						<a><b>X</b> <small>modelo.sur</small></a>
+
+						<h5>Datos</h5>
+						<ul id="datos" class="data">
+							<li><b>Resolución: <span>- x -</span></b></li>
+							<li><b title="Tiempo de cálculo">Tiempo: <span class="animate new">- ms</span></b></li>
+						</ul>
+
+						<!--<h3>Editar</h3>
+						<div class="btn-group" data-toggle="buttons" style="text-indent:0;margin-left:35px;">
+			              <label class="btn btn-primary active">
+			                <input type="radio" name="options" value="zoom">Zoom
+			              </label>
+			              <label class="btn btn-primary">
+			                <input type="radio" name="options" value="mover">Mover
+			              </label>
+			            </div>-->
+						
+	                	<h3></h3>
+	                	<div style="text-align:right;margin-right:10px">
+	                		<button class="btn btn-primary" name="render">Render</button>
+	                	</div>
+	                </li>
+	            </ul>
+	        </div>
+
+	        <!-- Page content -->
+	        <div id="page-content-wrapper" class="unselect">
+				<canvas id="canvas"></canvas>
+	        </div>
+	    </div>		
+
+		<script src="../engine/js/jquery.min.js"></script>
+		<script src="../engine/js/engine.js"></script>
+		<script src="models.loader.js"></script>
+		<script src="script.js"></script>
+	</body>
+</html>

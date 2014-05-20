@@ -16,9 +16,10 @@ var engine = {};
 			if ( w != undefined ) {
 				this.el.width = w;
 				this.el.height = h;
+			} else {
+				this.el.width = $parent.innerWidth() - 30;
+				this.el.height = $parent.innerHeight() - 30;
 			}
-			/*this.el.width = $parent.innerWidth() - 30;
-			this.el.height = $parent.innerHeight() - 50;*/
 		},
 		reset: function(){
 			this.el.width = this.el.width;
