@@ -1,7 +1,13 @@
 Visualización Computacional 1
 ==================
 
-[**Demo**](http://juampi92.github.io/VisualizacionCompI/)
+[**Overall Demo**](http://juampi92.github.io/VisualizacionCompI/)
+
+**Proyects**:
+
+ - [HGT](#hgt)
+ - [Fractals](#fractals)
+ - [3D rendering](#)
 
 HGT
 ===
@@ -10,7 +16,7 @@ The **Shuttle Radar Topography Mission** (SRTM) [(Wikipedia article)](http://en.
 SRTM data provides topography information, relief shading, and elevation profiles for the given terrain.
 
 Format
----
+------
 
 The data is divided into one degree square tiles. The outermost rows and columns of each tile overlap with the corresponding rows and columns of adjacent tiles.
 
@@ -18,16 +24,14 @@ The tiles are distributed as zip files containing **.hgt** files. The .hgt files
 
 
 .hgt Examples
----
-
+-------------
 
  - [Examples](http://www.exa.unicen.edu.ar/catedras/viscomp/recursos/HGT.zip)
  - [World map with HGTs](http://www.viewfinderpanoramas.org/Coverage%20map%20viewfinderpanoramas_org3.htm)
 
 
 Demo
----
-
+----
 
 [**Demo**](http://juampi92.github.io/VisualizacionCompI/entrega1/index.html)
 
