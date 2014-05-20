@@ -241,13 +241,14 @@
 			},
 			down: function(e){
 				if ( UI.mouse.pressed ) return UI.mouse.up(e);
+				if ( e.which != 1 ) return;
 				
 				UI.mouse.pressed = true;
 				UI.mouse.startPos = UI.mouse.getCoords(e);
 				console.log("Mouse Down");
 			},
 			up: function(e){
-				if ( !UI.mouse.pressed ) return;
+				if ( !UI.mouse.pressed || e.which != 1 ) return;
 
 				UI.mouse.pressed = false;
 				UI.mouse.endPos = UI.mouse.getCoords(e);
