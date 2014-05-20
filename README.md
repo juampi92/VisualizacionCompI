@@ -29,9 +29,9 @@ The tiles are distributed as zip files containing **.hgt** files. The .hgt files
  - [World map with HGTs](http://www.viewfinderpanoramas.org/Coverage%20map%20viewfinderpanoramas_org3.htm)
 
 
-**Demo**
-****
 
+
+****
 [**Demo**](http://juampi92.github.io/VisualizacionCompI/entrega1/index.html)
 
 
@@ -39,6 +39,7 @@ Fractals
 ===
 A **fractal** [(Wikipedia article)](http://en.wikipedia.org/wiki/Fractal) is a mathematical set that typically displays self-similar patterns. Fractals may be exactly the same at every scale, or, as illustrated in Figure 1, they may be nearly the same at different scales. The concept of fractal extends beyond self-similarity and includes the idea of a detailed pattern repeating itself.
 
-**Demo**
-**
+
+
+****
 [**Demo**](http://juampi92.github.io/VisualizacionCompI/entrega2/index.html)
