@@ -19,15 +19,22 @@
 		},
 		iniciate: function(){
 			Fractal.loaded = true;
-			Fractal.dimensions = fractal[Fractal.tipo].prototype.dim;
+			Fractal.resetDimentions();
 			UI.setFractalprop();
-			UI.setDimensions();
 		},
 		clear: function(){
 			Fractal.loaded = false;
 			Fractal.imagen = null;
 			Fractal.file = null;
 			Fractal.properties = {};
+		},
+		resetDimentions: function(){
+			var d = fractal[Fractal.tipo].prototype.dim;
+			Fractal.dimensions = {
+				x:{s:d.x.s,e:d.x.e},
+				y:{s:d.y.s,e:d.y.e}
+			};
+			UI.setDimensions();
 		},
 		render: function(){
 			var self = this;
@@ -193,6 +200,10 @@
 					Fractal.mode = 0;
 				else
 					Fractal.mode = 1;
+			});
+
+			this.$els.Fractal.settings.find('span#resetDim').click(function(){
+				Fractal.resetDimentions();
 			});
 
 			this.$els.Fractal.selectType.on('change',UI.typeChange);
