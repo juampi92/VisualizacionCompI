@@ -1,86 +1,4 @@
 // ------------------------------------------
-// 				Procesamiento
-// ------------------------------------------
-
-function FractalProcessing( params, start, end , dim , paleta ){
-	var arr = new Array(),
-		fract = new fractal[params.fractal_nom](),
-		width = (end.x-start.x),
-		height = (end.y-start.y),
-		rango_x = dim.x.e - dim.x.s,
-		rango_y = dim.y.e - dim.y.s;
-
-	console.log(start,end,dim);
-
-	var i = 0;
-	for (var y = end.y; y > start.y ; y--) {
-		
-		var _i = dim.y.s + (start.y + height - y) * rango_y / height;
-		//console.log(y,_i);
-
-		for (var x = start.x; x < end.x ; x++) {
-
-			var _r = dim.x.s + x * rango_x / width;
-
-			var it = fract.iterar(Complejo.nuevo(_r,_i));
-
-			var rgb = paleta.getColor(it);
-			arr[i] = rgb.r;
-			arr[i+1] = rgb.g;
-			arr[i+2] = rgb.b;
-			arr[i+3] = 255;
-			i+=4;
-		};
-
-		// Se pintó toda una fila
-	};
-
-	// Returns an array of iterations
-	return arr;
-};
-
-// ------------------------------------------
-// 			Tipos de Fractales
-// ------------------------------------------
-
-var fractal = {};
-
-fractal.base = function(){};
-fractal.base.prototype.MAX_IT = 90;
-fractal.base.prototype.DIVERGE = 4;
-fractal.base.prototype.getFirst = function(c){return 0;}
-fractal.base.prototype.getNext = function(Zn,c){return 0;}
-fractal.base.prototype.iterar = function(c){
-	var Zn = this.getFirst(c);
-
-	for(var i = 0; i < this.MAX_IT; i++){
-		Zn = this.getNext(Zn, c);
-
-		if (Complejo.modulo_sqrd(Zn) > this.DIVERGE)
-			return i;
-	};
-
-	return this.MAX_IT;
-};
-
-// ------------------------------------------
-// 			Fractales Específicos
-// ------------------------------------------
-
-fractal.mandelbrot = function(){};
-fractal.mandelbrot.prototype = new fractal.base();
-
-fractal.mandelbrot.prototype.dim = {x:{s:-2,e:1},y:{s:-1.5,e:1.5}};
-fractal.mandelbrot.prototype.DIVERGE = 4; // Diverge al cuadrado
-fractal.mandelbrot.prototype.exp = 2;
-
-fractal.mandelbrot.prototype.getFirst = function(c){return Complejo.nuevo();}
-fractal.mandelbrot.prototype.getNext = function(Zn,c) {
-	return	Complejo.suma( Complejo.potencia(Zn, this.exp ) , c);
-};
-
-
-// ------------------------------------------
 // 					Complejos
 // ------------------------------------------
 
@@ -120,10 +38,10 @@ var Complejo = {
 	cociente_c: function(c1,c2){
 		var aux1, aux2, aux3;
 		
-		if(Complejo.modulo_sqrd(c2) == 0 )
-			throw "Divide por cero";
+		/*if(Complejo.modulo_sqrd(c2) == 0 )
+			throw "Divide por cero";*/
 			
-		aux1 = c2.r * c2.r + c2.i * c2.i;
+		aux1 = c2.r * c2.r + c2.i * c2.i; if ( aux1 == 0 ) aux1 = 0.0001;
 		aux2 = c1.r * c2.r;
 		aux3 = c1.i * c2.i;
 		
@@ -193,6 +111,140 @@ var Complejo = {
 	}	
 }
 
+
+// ------------------------------------------
+// 				Procesamiento
+// ------------------------------------------
+
+function FractalProcessing( params, start, end , dim , paleta ){
+	var arr = new Array(),
+		fract = new fractal[params.fractal_nom](),
+		width = (end.x-start.x),
+		height = (end.y-start.y),
+		rango_x = dim.x.e - dim.x.s,
+		rango_y = dim.y.e - dim.y.s;
+
+	console.log(start,end,dim);
+
+	var i = 0;
+	for (var y = end.y; y > start.y ; y--) {
+		
+		var _i = dim.y.s + (start.y + height - y) * rango_y / height;
+		//console.log(y,_i);
+
+		for (var x = start.x; x < end.x ; x++) {
+
+			var _r = dim.x.s + x * rango_x / width;
+
+			var it = fract.iterar(Complejo.nuevo(_r,_i));
+
+			var rgb = paleta.getColor(it);
+			arr[i] = rgb.r;
+			arr[i+1] = rgb.g;
+			arr[i+2] = rgb.b;
+			arr[i+3] = 255;
+			i+=4;
+		};
+
+		// Se pintó toda una fila
+	};
+
+	// Returns an array of iterations
+	return arr;
+};
+
+// ------------------------------------------
+// 			Tipos de Fractales
+// ------------------------------------------
+
+var fractal = {};
+
+fractal.base = function(){};
+fractal.base.prototype.MAX_IT = 90;
+fractal.base.prototype.DIVERGE = 4; // Diverge al cuadrado
+fractal.base.prototype.getFirst = function(c){return 0;}
+fractal.base.prototype.getNext = function(Zn,c){return 0;}
+fractal.base.prototype.iterar = function(c){
+	var Zn = this.getFirst(c);
+
+	for(var i = 0; i < this.MAX_IT; i++){
+		Zn = this.getNext(Zn, c);
+
+		if (Complejo.modulo_sqrd(Zn) > this.DIVERGE)
+			return i;
+	};
+
+	return this.MAX_IT;
+};
+
+// ------------------------------------------
+// 			Fractales Específicos
+// ------------------------------------------
+
+
+// Mandelbrot
+
+
+fractal.mandelbrot = function(){};
+fractal.mandelbrot.prototype = new fractal.base();
+
+fractal.mandelbrot.prototype.dim = {x:{s:-2,e:1},y:{s:-1.5,e:1.5}};
+fractal.mandelbrot.prototype.exp = 2;
+
+fractal.mandelbrot.prototype.getFirst = function(c){return Complejo.nuevo();}
+fractal.mandelbrot.prototype.getNext = function(Zn,c) {
+	return	Complejo.suma( Complejo.potencia(Zn, this.exp ) , c);
+};
+
+// Mandelbrot 4
+
+fractal.mandelbrot4 = function(){};
+fractal.mandelbrot4.prototype = new fractal.mandelbrot();
+
+fractal.mandelbrot4.prototype.dim = {x:{s:-2,e:1},y:{s:-1.5,e:1.5}};
+fractal.mandelbrot4.prototype.exp = 4;
+
+// Julia
+
+fractal.julia = function(){};
+fractal.julia.prototype = new fractal.base();
+
+fractal.julia.prototype.dim = {x:{s:-1.6,e:1.5},y:{s:-1.5,e:1.5}};
+fractal.julia.prototype.cte = Complejo.nuevo(0.279,0);
+fractal.julia.prototype.exp = 2;
+
+fractal.julia.prototype.getFirst = function(c){return c;}
+fractal.julia.prototype.getNext = function(Zn,c) {
+	return	Complejo.suma( Complejo.potencia(Zn,this.exp) , this.cte);
+};
+
+// Julia 1
+
+fractal.julia1 = function(){};
+fractal.julia1.prototype = new fractal.julia();
+
+fractal.julia1.prototype.dim = {x:{s:-1.6,e:1.6},y:{s:-1.6,e:1.6}};
+fractal.julia1.prototype.cte = Complejo.nuevo(-0.835,-0.2321);
+
+// Julia 2
+
+fractal.julia2 = function(){};
+fractal.julia2.prototype = new fractal.julia();
+
+fractal.julia2.prototype.dim = {x:{s:-1.45,e:1.45},y:{s:-1.45,e:1.45}};
+fractal.julia2.prototype.cte = Complejo.nuevo(-0.382,0.618);
+
+// Julia Exponencial
+
+fractal.julia_exp = function(){};
+fractal.julia_exp.prototype = new fractal.julia();
+
+fractal.julia_exp.prototype.dim = {x:{s:-2,e:1},y:{s:-1.5,e:1.5}};
+fractal.julia_exp.prototype.cte = Complejo.nuevo(0.621,0);
+fractal.julia_exp.prototype.exp = 3;
+fractal.julia_exp.prototype.getNext = function(Zn,c) {
+	return	Complejo.suma( Complejo.exponencial( Complejo.potencia(Zn,this.exp) ) , this.cte);
+};
 
 // ------------------------------------------
 // 			Paleta Fija

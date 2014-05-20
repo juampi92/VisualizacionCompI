@@ -25,8 +25,6 @@
 		clear: function(){
 			Fractal.loaded = false;
 			Fractal.imagen = null;
-			Fractal.file = null;
-			Fractal.properties = {};
 		},
 		resetDimentions: function(){
 			var d = fractal[Fractal.tipo].prototype.dim;
@@ -72,6 +70,8 @@
 					Fractal.imagen = process.source;				
 					UI.rendered();
 				});
+
+				console.log(Fractal.properties);
 
 				Fractal.imagen.create( Fractal.properties.width , Fractal.properties.height );
 
@@ -218,8 +218,9 @@
 			var v = $(e.target).val();
 			if ( v != "" ) {
 				UI.fileSelect(true);
-				UI.$els.Fractal.fileName.children('spamm').html(e.target.selectedOptions[0].innerHTML);
+				UI.$els.Fractal.fileName.children('small').html(e.target.selectedOptions[0].innerHTML);
 				Fractal.tipo = v;
+				Fractal.iniciate();
 			}
 		},
 		fileSelect: function(activate){
@@ -245,7 +246,6 @@
 				
 				UI.mouse.pressed = true;
 				UI.mouse.startPos = UI.mouse.getCoords(e);
-				console.log("Mouse Down");
 			},
 			up: function(e){
 				if ( !UI.mouse.pressed || e.which != 1 ) return;
@@ -379,5 +379,23 @@
 	Fractal.paleta = new engine.Paleta(UI);
 	UI.init();
 	Fractal.iniciate();
+
+
+	function randomColor() {
+		return {
+			r: Math.round(Math.random()*255),
+			g: Math.round(Math.random()*255),
+			b: Math.round(Math.random()*255)
+		};
+	}
+
+	var print = "[";
+	for (var i = 0; i <= 90; i+=4) {
+		var color = randomColor();
+		print = print + '\n\t["'+i+'",{"r":'+color.r+',"g":'+color.g+',"b":'+color.b+'}],';
+	};
+	print = print + "\n]";
+
+	console.log(print);	
 
 })();
