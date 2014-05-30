@@ -2,24 +2,114 @@
 	if ( !window.File || !window.FileReader || !window.FileList || !window.Blob)
 		return alert('La API de Archivos no es compatible con tu navegador. Considera actualizarlo.');
 
-	var Model = {
+  /************
+      Vertex
+  ************/
+	function Vertex(x,y,z){
+		this.x = (x || 0);
+		this.y = (y || 0);
+		this.z = (z || 0);
+    return this;
+	}
+
+	Vertex.prototype.fromString = function(str){
+		var string = str.trim(),
+			coords = string.split(' ');
+
+		this.x = parseFloat(coords[1]);
+		this.y = parseFloat(coords[2]);
+		this.z = parseFloat(coords[3]);
+		return coords[0] >> 0;
+	};
+
+  Vertex.prototype.transformar = function(matrix){
+    var ret = [0,0,0,0],
+      vertx = [this.x,this.y,this.z,1];
+
+    for (var i = 0 ; i < 4 ; i++) {
+      for (var j = 0 ; j < 4 ; j++) {
+        ret[i] += M[i][j] * vertx[j];
+      }
+    }
+
+    return new Vertex( vertx[0] , vertx[1] , vertx[2] );
+  };
+
+  Vertex.resta = function(vtx1,vtx2){
+    return new Vertex(vtx1.x - vtx2.x , vtx1.y - vtx2.y , vtx1.z - vtx2.z );
+  };
+
+  Vertex.producto = function(v1,v2){
+    return new Vertex(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x);
+  };
+
+  /************
+      Polygon
+  ************/
+
+	function Polygon(vertices){
+		this.vertices = (vertices || []);
+    return this;
+	}
+
+	Polygon.prototype.fromString = function(str){
+		var string = str.trim().replace(/  +/g,' '),
+        vertices = string.split(' ');
+		for (var i = 0, max = vertices.length ; i < max; i++) {
+			this.vertices[i] = vertices[i] >> 0;
+		}
+    return this;
+	};
+
+  Polygon.prototype.getCenter = function(){
+    var cant = this.vertices.length,
+      z = 0;
+    for (var i = 0; i < cant; i++) z += this.vertices[i].z;
+    return z / cant;
+  };
+
+  /************
+      Model
+  ************/
+
+	function Model(type){
+		this.type = (type || "");
+		this.polygons = [];
+	}
+	Model.prototype.init = function(model,polys,offset){
+		var puntos = model.poligonos.splice(offset,polys);
+		for (var i = 0, max = puntos.length; i < max; i++) {
+			this.polygons[i] = new Polygon();
+			this.polygons[i].fromString(puntos[i]);
+		}
+	};
+
+	// -----------------------------------
+	//			Render
+	// -----------------------------------
+
+  var Render = {
 		loaded: false,
 		imagen: null,
 		file: null,
 		busy: false,
 		lastTime: 0,
-		properties: {
-			width:800,
-			height:800
-		},
+		modelos: [],
+		poligonos: [],
+		vertices: [],
 		iniciate: function( fileBuffer ){
-			Model.loaded = true;
+			Render.loaded = true;
 			UI.setModelprop();
 		},
 		clear: function(){
-			Model.loaded = false;
-			Model.imagen = null;
+			Render.loaded = false;
+			Render.imagen = null;
 		},
+    reset: function(){
+      Render.modelos = [];
+      Render.poligonos = [];
+      Render.vertices = [];
+    },
 		loadFile: function(evt){
 			var f = evt.target.files[0];
 
@@ -27,24 +117,82 @@
 
 			var r = new FileReader();
 
-			Model.file = f;
+			Render.file = f;
 
 			r.onload = function(e) {
 				UI.fileSelect(true);
-				console.log(e.target.result);
-				/*HGT.iniciate(e.target.result);
-				UI.$els.HGT.fileName.children('small').html(HGT.file.name);*/
+				Render.loadString(e.target.result);
+				UI.$els.fileName.children('small').html(Render.file.name);
+				Render.iniciate();
 			};
 			r.readAsText(f);
 		},
+		loadString: function(str){
+      Render.reset();
+
+			var arr = str.split('*'),
+          buffer_models = [];
+			
+      // First one is empty
+      arr.shift();
+
+      var sector,header;
+			for (var i = 0, max = arr.length; i < max; i++) {
+				sector = arr[i].split('\n');
+        header = sector.shift().trim();
+				switch(header){
+        // Modelos
+        case "ELEMENT GROUPS":
+          buffer_models = sector;
+          break;
+        // Poligonos
+        case "INCIDENCE":
+          var polyg;
+          for (var k = 0, maxk = sector.length; k < maxk; k++) {
+            if ( sector[k] ) {
+              polyg = new Polygon();
+              polyg.fromString(sector[k]);
+              Render.poligonos[k] = polyg;
+            }
+          }
+          break;
+        // Vertices
+        case "COORDINATES":
+          var vert,pos;
+          for (var l = 0, maxl = sector.length; l < maxl; l++) {
+            if ( sector[l] ) {
+              vert = new Vertex();
+              pos = vert.fromString(sector[l]);
+              Render.vertices[pos] = vert;
+            }
+          }
+          break;
+        default:
+          console.log(header + " -> Header default");
+        }
+			}
+
+      for (var j = 0, maxj = buffer_models.length; j < maxj; j++) {
+        buffer_models[j];
+      };
+      /*for (var j = 0, maxj = buffer_models.length; j < maxj; j++) {
+        //buffer_models[j];
+      }*/
+
+      console.log(Render.poligonos);
+      console.log(Render.vertices);
+		},
+		createModels: function(){
+
+    },
 		render: function(){
 			var self = this;
 
-			if ( !Model.loaded || Model.busy ) return alert("El Modelo está ocupado");
-			Model.busy = true;
+			if ( !Render.loaded || Render.busy ) return alert("El Modelo está ocupado");
+			Render.busy = true;
 			
 			setTimeout(function(){
-				Model.lastTime = Date.now();
+				Render.lastTime = Date.now();
 
 			},100);
 		},
@@ -59,27 +207,27 @@
 	var UI = {
 		$els: {},
 		init: function(){
-			this.$els.Model = {};
-			this.$els.Model.fetchFile = $('#ModelfetchFile');
-			this.$els.Model.settings = $("#ModelSettings");
-			this.$els.Model.fileInput = this.$els.Model.fetchFile.children('input[type="file"]');
-			this.$els.Model.fileName = this.$els.Model.settings.children('a:first');
+			this.$els = {};
+			this.$els.fetchFile = $('#ModelfetchFile');
+			this.$els.settings = $("#ModelSettings");
+			this.$els.fileInput = this.$els.fetchFile.children('input[type="file"]');
+			this.$els.fileName = this.$els.settings.children('a:first');
 
-			this.$els.Model.renderButton = this.$els.Model.settings.find('button[name="render"]');
-			this.$els.Model.renderButton.removeAttr("disabled");
+			this.$els.renderButton = this.$els.settings.find('button[name="render"]');
+			this.$els.renderButton.removeAttr("disabled");
 
 			this.setEventos();
 		},
 		setEventos: function(){
-			this.$els.Model.fileName.click(function(e){
-				Model.clear();
+			this.$els.fileName.click(function(e){
+				Render.clear();
 				UI.fileSelect(false);
 			});
-			this.$els.Model.renderButton.click(function(e){
-				Model.render();
+			this.$els.renderButton.click(function(e){
+				Render.render();
 			});
 
-			this.$els.Model.fileInput.on('change',Model.loadFile);
+			this.$els.fileInput.on('change',Render.loadFile);
 
 			// Dispararse en la primera dibujada
 			$(engine.MyCanvas.el).on('mousedown',UI.mouse.down);
@@ -87,12 +235,12 @@
 			$(engine.MyCanvas.el).on('mousemove',UI.mouse.move);
 		},
 		fileSelect: function(activate){
-			if ( ( activate == undefined ) || activate ){
-				this.$els.Model.fetchFile.hide();
-				this.$els.Model.settings.show();
+			if ( ( activate === undefined ) || activate ){
+				this.$els.fetchFile.hide();
+				this.$els.settings.show();
 			} else {
-				this.$els.Model.fetchFile.show();
-				this.$els.Model.settings.hide();
+				this.$els.fetchFile.show();
+				this.$els.settings.hide();
 			}
 		},
 		mouse: {
@@ -101,7 +249,7 @@
 			endPos:{x:0,y:0},
 			getCoords: function(e){
 				var rect = engine.MyCanvas.el.getBoundingClientRect();
-			    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
 			},
 			down: function(e){
 				if ( UI.mouse.pressed ) return UI.mouse.up(e);
@@ -121,21 +269,21 @@
 			}
 		},
 		setModelprop: function(){
-			var $lis = this.$els.Model.settings.find('ul#datos li');
-			$lis.eq(0).find('span').html(Model.properties.width+"x"+Model.properties.height);
+			var $lis = this.$els.settings.find('ul#datos li');
+			$lis.eq(0).find('span').html(engine.MyCanvas.el.width+"x"+engine.MyCanvas.el.height);
 			var $time = $lis.eq(1).children('b');
 			$time.children('span').remove();
 			var $span = $('<span></span>');
-			$span.html(Model.lastTime + "ms").addClass("animate new");
+			$span.html(Render.lastTime + "ms").addClass("animate new");
 			$time.append( $span );
 			$span.focus().removeClass("new");
 		},
 		rendering: function(){
-			UI.$els.Model.renderButton.html("... rendering ...").attr("disabled","");
+			UI.$els.renderButton.html("... rendering ...").attr("disabled","");
 			$('body').addClass("cargando");
 		},
 		rendered: function(){
-			UI.$els.Model.renderButton.html("Render").removeAttr("disabled");
+			UI.$els.renderButton.html("Render").removeAttr("disabled");
 			$('body').removeClass('cargando');
 		}
 	};

@@ -166,24 +166,24 @@ ul.data li{
   line-height: 20px;
 }
 
-ul#datos li span{
+#datos li span{
   color:#AAA;
 }
 
-ul#complejos li {
+#complejos li {
   font-weight:bold;
 }
 
-span#resetDim {
+#resetDim {
   cursor:pointer;
   color:white;
   font-size: 0.9em;
 }
-span#resetDim:hover{
+#resetDim:hover{
   text-decoration: underline;
 }
 
-ul#complejos li span {
+#complejos li span {
   font-size:1.2em;
   font-weight: bold;
   color:#ccc;
@@ -193,7 +193,7 @@ ul#complejos li span {
   display:inline-block;
 }
 
-ul#complejos output{
+#complejos output{
   text-indent: 5px;
   text-align: center;
   margin:0 5px;
@@ -206,25 +206,24 @@ ul#complejos output{
 
 h3 input[type="number"]{
   margin-top: -5px;
-  padding: 0;
-  padding-left: 5px;
+  padding: 0 5px 0 0;
   margin-left: 70px;
   width:50px;
   display:inline-block;
 }
 
-ul#paletaShow {
+#paletaShow {
   display:none;
 }
 
-ul#paletaShow li {
+#paletaShow li {
   list-style: none;
   padding:2px;
   line-height: 20px;
   color:white;
 }
 
-ul#paletaShow li span.color{
+#paletaShow li span.color{
   border:1px solid white;
   width:50px;
   height: 15px;

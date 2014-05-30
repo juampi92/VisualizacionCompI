@@ -24,6 +24,11 @@ var engine = {};
 		reset: function(){
 			this.el.width = this.el.width;
 		},
+		renderCanvas: function( canvas , keep ){
+			if ( ! keep ) engine.MyCanvas.reset();
+
+			engine.MyCanvas.context.drawImage( canvas , 0,0 );
+		},
 		renderImg: function( imag , keep ){
 			// Clear screen
 			if ( ! keep ) engine.MyCanvas.reset();
