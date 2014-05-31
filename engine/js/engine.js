@@ -1,7 +1,7 @@
 var engine = {};
 
 	// ************************
-	// 		Canvas
+	//		Canvas
 	// ************************
 
 	engine.MyCanvas = {
@@ -13,7 +13,7 @@ var engine = {};
 			// Inicializar canvas
 			var $parent = $(this.el).parent();
 
-			if ( w != undefined ) {
+			if ( w !== undefined ) {
 				this.el.width = w;
 				this.el.height = h;
 			} else {
@@ -54,11 +54,21 @@ var engine = {};
 		},
 		getCurrentData: function(){
 			return this.context.getImageData(0, 0, engine.MyCanvas.el.width, engine.MyCanvas.el.height);
+		},
+		drawTriangle: function(p1,p2,p3,color){
+			var ctx = engine.MyCanvas.context;
+
+			ctx.beginPath();
+			ctx.moveTo(p1.x,p1.y);
+			ctx.lineTo(p2.x,p2.y);
+			ctx.lineTo(p3.x,p3.y);
+			ctx.fillStyle = '#' + color;
+			ctx.fill();
 		}
 	};
 
 	// ************************************************
-	// 						Imagen
+	//						Imagen
 	// ************************************************
 
 	engine.Imagen = function( src ){
@@ -89,7 +99,7 @@ var engine = {};
 		this.img.onload = function(){
 			self.getImageData(onload);
 			self.loaded = true;
-			self.trigger("load");
+			self.trigger('load');
 		};
 		
 		if ( ! remote ) {
@@ -98,25 +108,25 @@ var engine = {};
 			// Fetch base64 of remote Image
 			$.getImageData({
 				url: self.src,
-				server: "./getImage.php",
+				server: './getImage.php',
 				success: function(image){
 					image.onload = self.img.onload;
 					self.img = image;
 					self.img.onload();
-					self.trigger("remote");
+					self.trigger('remote');
 				},
 				error: function(xhr, text_status){
-				  // Handle your error here
-				  self.trigger("error",xhr,text_status);
+					// Handle your error here
+					self.trigger('error',xhr,text_status);
 				}
 			});
-		};
+		}
 	};
 
 	engine.Imagen.prototype.clone = function(){
 		var ret = new engine.Imagen();
 
-    	var canvas = document.createElement('canvas');
+		var canvas = document.createElement('canvas');
 		
 		ret.width = ret.img.width = canvas.width = this.width;
 		ret.height = ret.img.height = canvas.height = this.height;
@@ -125,7 +135,7 @@ var engine = {};
 
 		context.putImageData(this.imgData,0,0);
 		ret.imgData = context.getImageData(0, 0, this.width,this.height);
-    	return ret;
+		return ret;
 	};
 
 	engine.Imagen.prototype.getImageData = function( onload ){
@@ -164,10 +174,10 @@ var engine = {};
 	engine.Imagen.prototype.loop = function(callback){
 		var i = 0;
 		for ( var y = 0 ; y < this.height ; y++ )
-    		for ( var x = 0 ; x < this.width ; x++ ){
-    			callback(i,x,y,this.imgData.data[i],this.imgData.data[i+1],this.imgData.data[i+2]);
-			    i += 4;
-    		}
+			for ( var x = 0 ; x < this.width ; x++ ){
+				callback(i,x,y,this.imgData.data[i],this.imgData.data[i+1],this.imgData.data[i+2]);
+				i += 4;
+			}
 	};
 
 	engine.Imagen.prototype.selectiveLoop = function(from,to,callback){
@@ -176,10 +186,10 @@ var engine = {};
 			coords_to = this.getCoordsFromPos(to);
 
 		for ( var y = coords_from.y ; y < coords_to.y ; y++ )
-    		for ( var x = 0 ; x < this.width ; x++ ){
-    			callback(i,x,y,this.imgData.data[i],this.imgData.data[i+1],this.imgData.data[i+2]);
-			    i += 4;
-    		}
+			for ( var x = 0 ; x < this.width ; x++ ){
+				callback(i,x,y,this.imgData.data[i],this.imgData.data[i+1],this.imgData.data[i+2]);
+				i += 4;
+			}
 	};
 
 	engine.Imagen.prototype.resize = function(newWidth,newHeight){};
@@ -235,9 +245,9 @@ var engine = {};
 
 	engine.Imagen.prototype.RGBtoHex = function(rgb){
 		// Check if hex
-		if ( rgb.substr(0,1) == "#" ) return rgb; // Ya es hex
+		if ( rgb.substr(0,1) == '#' ) return rgb; // Ya es hex
 
-		var hex = "#";
+		var hex = '#';
 		hex += rgb.r.toString(16);
 		hex += rgb.g.toString(16);
 		hex += rgb.b.toString(16);
@@ -254,7 +264,7 @@ var engine = {};
 	};
 
 	// ************************************************
-	// 						Process
+	//					Process
 	// ************************************************
 
 	engine.Process = function( source ){
@@ -270,15 +280,15 @@ var engine = {};
 		setTimeout(function(){
 			var pixels_source = self.source.imgData.data;
 
-	    	self.source.loop(function(i,x,y,r,g,b){
-	    		var rgb = callback(i,x,y);
-			    pixels_source[i] = rgb.r;
-			    pixels_source[i+1] = rgb.g; // Green
-			    pixels_source[i+2] = rgb.b; // Blue
-			    pixels_source[i+3] = 255; // Alpha
-	    	});
-	    	
-			if ( self.events["end"] ) self.events["end"]();
+			self.source.loop(function(i,x,y,r,g,b){
+				var rgb = callback(i,x,y);
+				pixels_source[i] = rgb.r;
+				pixels_source[i+1] = rgb.g; // Green
+				pixels_source[i+2] = rgb.b; // Blue
+				pixels_source[i+3] = 255; // Alpha
+			});
+			
+			if ( self.events['end'] ) self.events['end']();
 			return;
 		},0);
 	};
@@ -293,7 +303,7 @@ var engine = {};
 	};
 
 	// ************************************************
-	// 						ProcessMulti
+	//					ProcessMulti
 	// ************************************************
 
 	engine.ProcessMulti = function( worker_url , source , workers_count , func ){
@@ -304,10 +314,10 @@ var engine = {};
 		this.ready = 0;
 		this.workers = [];
 
-		this.array = new Array();
+		this.array = [];
 		this.func = func;
 
-		this.workers_time = new Array();
+		this.workers_time = [];
 		return this;
 	};
 
@@ -318,27 +328,28 @@ var engine = {};
 
 		if ( !window.Worker ) this.workers_count=1;
 
-		// Calcular inicio, fin y tipo de Fractal. No usar "callback"
+		// Calcular inicio, fin y tipo de Fractal. No usar 'callback'
 		var from = start.y,
 			to = 0,
 			chunks = Math.ceil(end.y / this.workers_count);
 
 		if ( this.workers_count == 1) {
-			if ( ! window.Worker ) console.log("No se utilizarán Web Workers (multi-threads)");
+			if ( ! window.Worker ) console.log('No se utilizarán Web Workers (multi-threads)');
 
-	        // Procesa la funcion deseada
-	        this.array = new Array();
-	        this.array[0] = this.func(params,start,end,dimensions,paleta);
+			// Procesa la funcion deseada
+			this.array = [];
+			this.array[0] = this.func(params,start,end,dimensions,paleta);
 
-	        this.endLoop();
-	        return;
-	    }
-    	
-	    var _paleta = {json:paleta.json,suav:paleta.suavizado};
+			this.endLoop();
+			return;
+		}
+		
+		var _paleta = {json:paleta.json,suav:paleta.suavizado};
 
 		this.workers = [];
 		var dim_chunk = (dimensions.y.e-dimensions.y.s) / this.workers_count,
-			dim_from = dimensions.y.s;
+			dim_from = dimensions.y.s,
+			onMessageFun = function(e){ self.endWork(e); };
 		
 		for (var j = 0; j < this.workers_count ; j++) {
 			to = Math.min(from+chunks,end.y);
@@ -347,35 +358,35 @@ var engine = {};
 			this.workers_time[j] = Date.now();
 
 			var worker = new Worker(this.worker_url);
-		    worker.onmessage = function(e){self.endWork(e)};
+			worker.onmessage = onMessageFun;
 
-		    // Getting the picture
-		    var _start = {x:start.x,y:from},
-		    	_end = {x:end.x,y:to},
-		    	_dimensions = {
-		    		x:dimensions.x,
-		    		y: {
-		    			s: ( dim_from + dim_chunk*j ) ,
-		    			e: ( dim_from + dim_chunk*(j+1) )
-		    		}
-		    	};
+			// Getting the picture
+			var _start = {x:start.x,y:from},
+				_end = {x:end.x,y:to},
+				_dimensions = {
+					x:dimensions.x,
+					y: {
+						s: ( dim_from + dim_chunk*j ) ,
+						e: ( dim_from + dim_chunk*(j+1) )
+					}
+				};
 
-		    // Laburá!
-		    worker.postMessage({ 
-		    	params: params,
-		    	start: _start,
-		    	end: _end,
-		    	dimensions: _dimensions,
-		    	paleta: _paleta,
-		    	index:j });
+			// Laburá!
+			worker.postMessage( {
+				params: params,
+				start: _start,
+				end: _end,
+				dimensions: _dimensions,
+				paleta: _paleta,
+				index:j });
 
-		    from = to;
-		};
+			from = to;
+		}
 	};
 
 	engine.ProcessMulti.prototype.endWork = function(e){
 		var i = e.data.worker;
-		console.log("Terminado el worker " + i + ". Tiempo total de: " + ( Date.now() - this.workers_time[i] ) +"ms" );
+		console.log('Terminado el worker ' + i + '. Tiempo total de: ' + ( Date.now() - this.workers_time[i] ) +'ms' );
 		this.ready++;
 		this.array[i] = e.data.arr;
 
@@ -385,7 +396,7 @@ var engine = {};
 	};
 
 	engine.ProcessMulti.prototype.endLoop = function(){
-		console.log("Terminado el Loop Multi-Thread. Acomodando la imagen");
+		console.log('Terminado el Loop Multi-Thread. Acomodando la imagen');
 		
 		
 		var pixels_source = this.source.imgData.data;
@@ -398,21 +409,21 @@ var engine = {};
 			for (var j = 0; j < this.array[i].length; j++) {
 				pixels_source[px] = this.array[i][j];
 				px++;
-			};
+			}
 
-		console.log("Retardo en Dibujar: " + (Date.now() - tiempo) + "ms.");
+		console.log('Retardo en Dibujar: ' + (Date.now() - tiempo) + 'ms.');
 
-		if (this.events["end"]) this.events["end"]();
+		if (this.events['end']) this.events['end']();
 		return;
 	};
 
 	// ************************************************
-	// 						Paleta
+	//						Paleta
 	// ************************************************	
 
 	engine.Paleta = function(UI){
 		this.loaded = false;
-		this.name = "";
+		this.name = '';
 		this.json = null;
 		this.suavizado = false;
 		this.UI = UI;
@@ -422,7 +433,7 @@ var engine = {};
 		loadFile: function(evt){
 			var f = evt.target.files[0];
 
-			if (!f) return alert("Error al tratar de abrir el archivo");
+			if (!f) return alert('Error al tratar de abrir el archivo');
 
 			var r = new FileReader();
 
@@ -438,15 +449,14 @@ var engine = {};
 		},
 		ajaxFetch: function(dir){
 			var self = this;
-			$.getJSON( "./paletas/" + dir + ".json", function(d) {
+			$.getJSON( './paletas/' + dir + '.json', function(d) {
 					self.loaded = true;
-					self.name = dir + ".json";
+					self.name = dir + '.json';
 					self.json = d;
 					self.UI.paletaSelect(true);
-					self.UI.$els.paleta.divs.current.children('small').html(self.name);					
-				})
-				.fail(function() {
-					alert( "Error al cargar esa paleta" );
+					self.UI.$els.paleta.divs.current.children('small').html(self.name);
+			}).fail(function() {
+					alert( 'Error al cargar esa paleta' );
 			});
 		},
 		getColor: function(factor){
@@ -477,7 +487,7 @@ var engine = {};
 		},
 		clear: function(){
 			this.loaded = false;
-			this.name = "";
+			this.name = '';
 			this.json = null;
 		}
-	}
+	};

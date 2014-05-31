@@ -61,6 +61,14 @@
     return this;
 	};
 
+  Polygon.prototype.getVertex = function(pos){
+    return Render.vertices[this.vertices[pos]];
+  };
+
+  Polygon.prototype.draw = function(color){
+    engine.MyCanvas.drawTriangle( this.getVertex(0) , this.getVertex(1) , this.getVertex(2) , color );
+  };
+
   Polygon.prototype.getCenter = function(){
     var cant = this.vertices.length,
       z = 0;
@@ -76,12 +84,11 @@
 		this.type = (type || "");
 		this.polygons = [];
 	}
-	Model.prototype.init = function(model,polys,offset){
-		var puntos = model.poligonos.splice(offset,polys);
-		for (var i = 0, max = puntos.length; i < max; i++) {
-			this.polygons[i] = new Polygon();
-			this.polygons[i].fromString(puntos[i]);
-		}
+	Model.prototype.init = function(polygs,polys_count){
+    if ( polys_count )
+      this.polygons = polygs.splice(0,polys_count);
+    else
+      this.polygons = polygs;
 	};
 
 	// -----------------------------------
@@ -172,15 +179,17 @@
         }
 			}
 
+      var model,model_arr;
       for (var j = 0, maxj = buffer_models.length; j < maxj; j++) {
-        buffer_models[j];
-      };
-      /*for (var j = 0, maxj = buffer_models.length; j < maxj; j++) {
-        //buffer_models[j];
-      }*/
+        model_arr = buffer_models[j].split(' ');
+        if ( model_arr.length > 1 ) {
+          model = new Model(model_arr[2]);
+          model.init(Render.poligonos,model_arr[1]);
+          Render.modelos[model_arr[0]] = model;
+        }
+      }
 
-      console.log(Render.poligonos);
-      console.log(Render.vertices);
+      console.log(Render.modelos);
 		},
 		createModels: function(){
 
@@ -188,13 +197,22 @@
 		render: function(){
 			var self = this;
 
-			if ( !Render.loaded || Render.busy ) return alert("El Modelo está ocupado");
+			//if ( !Render.loaded || Render.busy ) return alert("El Modelo está ocupado");
 			Render.busy = true;
+
+      engine.MyCanvas.reset();
 			
 			setTimeout(function(){
 				Render.lastTime = Date.now();
+        var polygs = Render.modelos[1].polygons;
 
-			},100);
+        for (var i = 0, max_i = polygs.length; i < max_i; i++) {
+          polygs[i].draw( Math.floor(Math.random()*16777215).toString(16) ); // El color se debería calcular dentro del polygono, pero bueno, desp se ve
+        }
+
+        Render.busy = false;
+
+			},50);
 		},
 		calcularZoom: function(pos,medidas){
 		},
