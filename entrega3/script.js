@@ -79,7 +79,7 @@
         Vertex.resta( vs[1], vs[2] )
       );
 
-    // Está detrás. No se dibuja
+    // Está de espaldas. No se dibuja
     if ( vNormal.z <= 0 ) return;
 
     var fuenteLuz = new Vertex(0, 1, 0),
@@ -91,7 +91,7 @@
 
       r,g,b,color;
 
-    r = (Math.max(0, intensidadLuz * (255 - ambiente.r)) + ambiente.r ) >> 0;
+    r = (Math.max(0, intensidadLuz * (255 - ambiente.r)) + ambiente.r) >> 0;
     g = (Math.max(0, intensidadLuz * (255 - ambiente.g)) + ambiente.g) >> 0;
     b = (Math.max(0, intensidadLuz * (255 - ambiente.b)) + ambiente.b) >> 0;
     
@@ -487,10 +487,16 @@
         } else if ( UI.mouse.pressed == 2 ) {
           // Rotar
           
-          x = UI.mouse.endPos.x-UI.mouse.startPos.x;
-          y = UI.mouse.endPos.y-UI.mouse.startPos.y;
+          x = (UI.mouse.endPos.x-UI.mouse.startPos.x) * 0.5;
+          y = (UI.mouse.endPos.y-UI.mouse.startPos.y) * 0.5;
 
-          Render.macum = Matriz.getRotX(2* Math.PI / 180).prod(Render.macum);
+          // Transformar desde mouse endPos
+
+          Render.macum = Matriz.getRotX(x* Math.PI / 180).prod(Render.macum);
+          Render.macum = Matriz.getRotY(y* Math.PI / 180).prod(Render.macum);
+
+          // Transformar hasta mouse endPos
+
           UI.setMatrix();
           Render.render(true);
         }
