@@ -333,8 +333,10 @@
         }
 
         Render.busy = false;
+        Render.lastTime = Date.now() - Render.lastTime;
+        UI.setModelprop();
 
-			},50);
+			},0);
 		},
     painter: function(polygs,vertices){
       // ---- Algoritmo del Pintor
@@ -347,11 +349,7 @@
       for (var i = 0, max_i = poligonos.length; i < max_i; i++) {
         polygs[i].draw(vertices);
       }
-    },
-		calcularZoom: function(pos,medidas){
-		},
-		calcularDesplazo: function(x,y){
-		}
+    }
 	};
 
 	engine.MyCanvas.init();
@@ -367,7 +365,7 @@
       this.$els.fileSelect = this.$els.fetchFile.children('select[type="file"]');
       this.$els.fileLoad = this.$els.fetchFile.children('button[action="load"]');
       this.$els.fileLoad.removeAttr("disabled");
-      
+
 			this.$els.fileName = this.$els.settings.children('a:first');
 
 			this.$els.renderButton = this.$els.settings.find('button[name="render"]');
