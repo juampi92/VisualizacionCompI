@@ -56,12 +56,13 @@ var engine = {};
 			return this.context.getImageData(0, 0, engine.MyCanvas.el.width, engine.MyCanvas.el.height);
 		},
 		drawTriangle: function(p1,p2,p3,color){
-			var ctx = engine.MyCanvas.context;
+			var ctx = engine.MyCanvas.context,
+				h = this.el.height;
 
 			ctx.beginPath();
-			ctx.moveTo(p1.x,p1.y);
-			ctx.lineTo(p2.x,p2.y);
-			ctx.lineTo(p3.x,p3.y);
+			ctx.moveTo(p1.x,h - p1.y);
+			ctx.lineTo(p2.x,h - p2.y);
+			ctx.lineTo(p3.x,h - p3.y);
 			ctx.fillStyle = '#' + color;
 			ctx.fill();
 		}
@@ -490,4 +491,12 @@ var engine = {};
 			this.name = '';
 			this.json = null;
 		}
+	};
+
+	// ************************************************
+	//						Utiles
+	// ************************************************	
+
+	engine.rgbToHex = function(r,g,b) {
+		return ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 	};

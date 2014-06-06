@@ -248,3 +248,16 @@ canvas {
 .animate.new {
   color:wheat !important;
 }
+
+#macum {
+  margin: 0 auto;
+  width: 90%;
+  text-align: center;
+}
+
+#macum tr td output {
+  width:50px;
+  color: wheat;
+  font-weight: bold;
+  overflow-x: hidden;
+}

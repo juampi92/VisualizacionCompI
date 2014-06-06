@@ -22,17 +22,22 @@
 		return coords[0] >> 0;
 	};
 
-  Vertex.prototype.transformar = function(matrix){
+  Vertex.prototype.transformar = function(matriz){
     var ret = [0,0,0,0],
-      vertx = [this.x,this.y,this.z,1];
+      vertx = [this.x,this.y,this.z,1],
+      M = matriz.matrix;
 
     for (var i = 0 ; i < 4 ; i++) {
       for (var j = 0 ; j < 4 ; j++) {
         ret[i] += M[i][j] * vertx[j];
       }
     }
+    return new Vertex( ret[0] , ret[1] , ret[2] );
+  };
 
-    return new Vertex( vertx[0] , vertx[1] , vertx[2] );
+  Vertex.prototype.versor = function(){
+    var modulo = Math.sqrt( this.x*this.x + this.y*this.y + this.z*this.z );
+    return new Vertex(this.x/modulo,this.y/modulo,this.z/modulo);
   };
 
   Vertex.resta = function(vtx1,vtx2){
@@ -41,6 +46,10 @@
 
   Vertex.producto = function(v1,v2){
     return new Vertex(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x);
+  };
+
+  Vertex.productoEscalar = function(v1,v2){
+    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
   };
 
   /************
@@ -61,12 +70,35 @@
     return this;
 	};
 
-  Polygon.prototype.getVertex = function(pos){
-    return Render.vertices[this.vertices[pos]];
-  };
+  Polygon.prototype.draw = function(vertices){
+    // Calcular vector normal
 
-  Polygon.prototype.draw = function(color){
-    engine.MyCanvas.drawTriangle( this.getVertex(0) , this.getVertex(1) , this.getVertex(2) , color );
+    var vs = [ vertices[this.vertices[0]] , vertices[this.vertices[1]] , vertices[this.vertices[2]] ],
+      vNormal = Vertex.producto(
+        Vertex.resta( vs[0], vs[1] ),
+        Vertex.resta( vs[1], vs[2] )
+      );
+
+    // Está detrás. No se dibuja
+    if ( vNormal.z <= 0 ) return;
+
+    var fuenteLuz = new Vertex(0, 1, 0),
+      luz = {r:200,g:200,b:100},
+      ambiente = {r:40,g:40,b:50},
+      objeto = {r:255,g:0,b:0},
+
+      intensidadLuz = Math.max(0,Vertex.productoEscalar(fuenteLuz,vNormal.versor())),
+
+      r,g,b,color;
+
+    r = (Math.max(0, intensidadLuz * (255 - ambiente.r)) + ambiente.r ) >> 0;
+    g = (Math.max(0, intensidadLuz * (255 - ambiente.g)) + ambiente.g) >> 0;
+    b = (Math.max(0, intensidadLuz * (255 - ambiente.b)) + ambiente.b) >> 0;
+    
+    color = engine.rgbToHex(r,g,b);
+
+    // Dibujar poligono resultante
+    engine.MyCanvas.drawTriangle( vs[0] , vs[1] , vs[2] , color );
   };
 
   Polygon.prototype.getCenter = function(){
@@ -74,6 +106,9 @@
       z = 0;
     for (var i = 0; i < cant; i++) z += this.vertices[i].z;
     return z / cant;
+  };
+  Polygon.compare = function(a,b){
+    return a.getCenter() - b.getCenter();
   };
 
   /************
@@ -91,6 +126,82 @@
       this.polygons = polygs;
 	};
 
+  /************
+      Matriz
+  ************/
+
+  function Matriz( matrix ){
+    this.matrix = (matrix || Matriz.identidad());
+  }
+  Matriz.prototype.prod = function(matriz){
+    var MatrizAux = new Matriz(Matriz.vacia());
+
+    for ( var k = 0; k < 4; k++){
+      for ( var j = 0; j < 4; j++){
+        for ( var i = 0; i < 4; i++ ){
+          MatrizAux.matrix[k][j] += this.matrix[k][i] * matriz.matrix[i][j];
+        }
+      }
+    }
+
+    return MatrizAux;
+  };
+  Matriz.prototype.suma = function(matriz){
+    var MatrizAux = new Matriz(Matriz.vacia()),
+      j,i;
+    for ( j = 0; j < 4; j++){
+      for ( i = 0; i < 4; i++ ){
+        MatrizAux.matrix[j][i] = this.matrix[j][i] + matriz.matrix[j][i];
+      }
+    }
+    return MatrizAux;
+  };
+  Matriz.prototype.get = function(){
+    return this.matrix;
+  };
+  Matriz.getRotX = function(ang){
+    return new Matriz([
+      [1,0,0,0],
+      [0,Math.cos(ang),-Math.sin(ang),0],
+      [0,Math.sin(ang),Math.cos(ang),0],
+      [0,0,0,1]
+    ]);
+  };
+  Matriz.getRotY = function(ang){
+    return new Matriz([
+      [Math.cos(ang),0,Math.sin(ang),0],
+      [0,1,0,0],
+      [-Math.sin(ang),0,Math.cos(ang),0],
+      [0,0,0,1]
+    ]);
+  };
+  Matriz.getScale = function(zoom){
+    return new Matriz([
+      [zoom,0,0,0],
+      [0,zoom,0,0],
+      [0,0,zoom,0],
+      [0,0,0,1]
+    ]);
+  };
+  Matriz.getPerspectiva = function(d){
+    return new Matriz([
+      [1,0,0,0],
+      [0,1,0,0],
+      [0,0,1,0],
+      [0,0,1/d,1]
+    ]);
+  };
+  Matriz.getTras = function(x,y,z){
+    return new Matriz([
+      [0,0,0,x],
+      [0,0,0,y],
+      [0,0,0,z],
+      [0,0,0,0]
+    ]);
+  };
+  Matriz.identidad = function(){ return [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]];};
+  Matriz.vacia = function(){ return [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];};
+
 	// -----------------------------------
 	//			Render
 	// -----------------------------------
@@ -104,6 +215,7 @@
 		modelos: [],
 		poligonos: [],
 		vertices: [],
+    macum: new Matriz(),
 		iniciate: function( fileBuffer ){
 			Render.loaded = true;
 			UI.setModelprop();
@@ -185,35 +297,57 @@
         if ( model_arr.length > 1 ) {
           model = new Model(model_arr[2]);
           model.init(Render.poligonos,model_arr[1]);
-          Render.modelos[model_arr[0]] = model;
+          Render.modelos.push(model);
         }
       }
 
       console.log(Render.modelos);
 		},
-		createModels: function(){
-
-    },
-		render: function(){
+		render: function(auto){
 			var self = this;
 
 			//if ( !Render.loaded || Render.busy ) return alert("El Modelo está ocupado");
 			Render.busy = true;
 
+      if ( !auto ) Render.macum = new Matriz(UI.getMatrix());
+
       engine.MyCanvas.reset();
 			
 			setTimeout(function(){
 				Render.lastTime = Date.now();
-        var polygs = Render.modelos[1].polygons;
 
-        for (var i = 0, max_i = polygs.length; i < max_i; i++) {
-          polygs[i].draw( Math.floor(Math.random()*16777215).toString(16) ); // El color se debería calcular dentro del polygono, pero bueno, desp se ve
+        // Hacer algo con los vertices
+        var vertices = [],
+          w = engine.MyCanvas.el.width/2,
+          h = engine.MyCanvas.el.height/2,
+          i;
+
+        for (var v = 0, max_v = Render.vertices.length; v < max_v; v++) {
+          vertices[v] = Render.vertices[v].transformar(Render.macum);
+        }
+        
+        var polygs;
+        for (var m = 0, max_m = Render.modelos.length; m < max_m; m++) {
+          polygs = Render.modelos[m].polygons;
+          Render.painter(polygs,vertices);
         }
 
         Render.busy = false;
 
 			},50);
 		},
+    painter: function(polygs,vertices){
+      // ---- Algoritmo del Pintor
+
+      // Ordenar los poligonos
+      var poligonos = polygs.slice(0);
+      poligonos.sort(Polygon.compare);
+
+      // Dibujar todos los poligonos
+      for (var i = 0, max_i = poligonos.length; i < max_i; i++) {
+        polygs[i].draw(vertices);
+      }
+    },
 		calcularZoom: function(pos,medidas){
 		},
 		calcularDesplazo: function(x,y){
@@ -224,15 +358,33 @@
 
 	var UI = {
 		$els: {},
+    $macum: [[],[],[],[]],
 		init: function(){
 			this.$els = {};
 			this.$els.fetchFile = $('#ModelfetchFile');
 			this.$els.settings = $("#ModelSettings");
 			this.$els.fileInput = this.$els.fetchFile.children('input[type="file"]');
+      this.$els.fileSelect = this.$els.fetchFile.children('select[type="file"]');
+      this.$els.fileLoad = this.$els.fetchFile.children('button[action="load"]');
+      this.$els.fileLoad.removeAttr("disabled");
+      
 			this.$els.fileName = this.$els.settings.children('a:first');
 
 			this.$els.renderButton = this.$els.settings.find('button[name="render"]');
 			this.$els.renderButton.removeAttr("disabled");
+
+      this.$els.zoom = this.$els.settings.find(".btn-group.zoom");
+
+      this.$els.macum = $('table#macum');
+      var filas = this.$els.macum.find('tr'),
+        cols;
+
+      for (var i = 0, max_i = filas.length; i < max_i; i++) {
+        cols = $(filas[i]).find('td');
+        for (var j = 0, max_j = cols.length; j < max_j; j++) {
+          this.$macum[i][j] = $($(cols[j]).children('output')[0]);
+        }
+      }
 
 			this.setEventos();
 		},
@@ -246,6 +398,42 @@
 			});
 
 			this.$els.fileInput.on('change',Render.loadFile);
+
+      this.$els.fileLoad.on('click',function(){
+        var folder = "modelos/",
+          ext = ".sur",
+          select = UI.$els.fileSelect.val();
+
+        UI.$els.fileLoad.attr("disabled","");
+        $.ajax( {
+          url:folder+select+ext,
+          dataType:"text"
+        })
+          .done(function(d){
+          
+            UI.fileSelect(true);
+            Render.loadString(d);
+            UI.$els.fileName.children('small').html(select+ext);
+            Render.iniciate();
+
+        })
+          .fail(function(e,s,a){
+            console.log("Error",s,a);
+        })
+          .always(function(){
+            UI.$els.fileLoad.removeAttr("disabled");
+        });
+
+      });
+
+      this.$els.zoom.on('click','button',function(e){
+        var $this = $(this);
+
+        if ( $this.html() == "+" )
+          UI.zoom(true);
+        else
+          UI.zoom(false);
+      });
 
 			// Dispararse en la primera dibujada
 			$(engine.MyCanvas.el).on('mousedown',UI.mouse.down);
@@ -270,20 +458,46 @@
         return { x: e.clientX - rect.left, y: e.clientY - rect.top };
 			},
 			down: function(e){
-				if ( UI.mouse.pressed ) return UI.mouse.up(e);
-				if ( e.which != 1 ) return;
+        if ( UI.mouse.pressed ) return UI.mouse.up(e);
 				
-				UI.mouse.pressed = true;
+        UI.mouse.pressed = e.which;
 				UI.mouse.startPos = UI.mouse.getCoords(e);
 			},
 			up: function(e){
-				if ( !UI.mouse.pressed || e.which != 1 ) return;
+				if ( !UI.mouse.pressed ) return;
 
-				UI.mouse.pressed = false;
+				UI.mouse.pressed = 0;
 				UI.mouse.endPos = UI.mouse.getCoords(e);
+
+        return;
 			},
 			move: function(e){
 				if ( !UI.mouse.pressed ) return;
+        
+        UI.mouse.endPos = UI.mouse.getCoords(e);
+
+        var x,y;
+        if ( UI.mouse.pressed == 1 ) {
+          // Trasladas
+
+          x = UI.mouse.endPos.x-UI.mouse.startPos.x;
+          y = UI.mouse.endPos.y-UI.mouse.startPos.y;
+
+          Render.macum = Render.macum.suma(Matriz.getTras(x,-y,0));
+          UI.setMatrix();
+          Render.render(true);
+        } else if ( UI.mouse.pressed == 2 ) {
+          // Rotar
+          
+          x = UI.mouse.endPos.x-UI.mouse.startPos.x;
+          y = UI.mouse.endPos.y-UI.mouse.startPos.y;
+
+          Render.macum = Matriz.getRotX(2* Math.PI / 180).prod(Render.macum);
+          UI.setMatrix();
+          Render.render(true);
+        }
+
+        UI.mouse.startPos = UI.mouse.endPos;
 			}
 		},
 		setModelprop: function(){
@@ -303,9 +517,32 @@
 		rendered: function(){
 			UI.$els.renderButton.html("Render").removeAttr("disabled");
 			$('body').removeClass('cargando');
-		}
+		},
+    zoom: function(zoomin){
+      var zoom = (zoomin) ? 1.2 : 0.8;
+      Render.macum = Matriz.getScale(zoom).prod(Render.macum);
+      UI.setMatrix();
+      Render.render(true);
+    },
+    setMatrix: function(){
+      var matrix = Render.macum.matrix;
+
+      for (var i = 0, max_i = matrix.length; i < max_i; i++)
+        for (var j = 0, max_j = matrix[i].length; j < max_j; j++)
+          this.$macum[i][j].html(matrix[i][j]);
+    },
+    getMatrix: function(){
+      var matrix = [[],[],[],[]];
+
+      for (var i = 0, max_i = 4; i < max_i; i++)
+        for (var j = 0, max_j = 4; j < max_j; j++)
+          matrix[i][j] = parseFloat( this.$macum[i][j].html(),10);
+
+      return matrix;
+    }
 	};
 	
 	UI.init();
+  UI.setMatrix();
 
 })();
