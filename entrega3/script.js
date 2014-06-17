@@ -104,11 +104,11 @@
   Polygon.prototype.getCenter = function(){
     var cant = this.vertices.length,
       z = 0;
-    for (var i = 0; i < cant; i++) z += this.vertices[i].z;
+    for (var i = 0; i < cant; i++) z += Render.vertices[this.vertices[i]].z;
     return z / cant;
   };
   Polygon.compare = function(a,b){
-    return a.getCenter() - b.getCenter();
+    return b.getCenter() - a.getCenter();
   };
 
   /************
@@ -352,7 +352,7 @@
 
       // Dibujar todos los poligonos
       for (var i = 0, max_i = poligonos.length; i < max_i; i++) {
-        polygs[i].draw(vertices);
+        poligonos[i].draw(vertices);
       }
     }
 	};
@@ -488,7 +488,6 @@
         var x,y;
         if ( UI.mouse.pressed == 1 ) {
           // Trasladas
-
           x = UI.mouse.endPos.x-UI.mouse.startPos.x;
           y = UI.mouse.endPos.y-UI.mouse.startPos.y;
 
@@ -496,7 +495,6 @@
           UI.setMatrix();
           Render.render(true);
         }
-
         UI.mouse.startPos = UI.mouse.endPos;
 			}
 		},
