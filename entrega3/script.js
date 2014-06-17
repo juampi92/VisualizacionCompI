@@ -161,17 +161,17 @@
   };
   Matriz.getRotX = function(ang){
     return new Matriz([
-      [1,0,0,0],
-      [0,Math.cos(ang),-Math.sin(ang),0],
-      [0,Math.sin(ang),Math.cos(ang),0],
+      [Math.cos(ang),0,Math.sin(ang),0],
+      [0,1,0,0],
+      [-Math.sin(ang),0,Math.cos(ang),0],
       [0,0,0,1]
     ]);
   };
   Matriz.getRotY = function(ang){
     return new Matriz([
-      [Math.cos(ang),0,Math.sin(ang),0],
-      [0,1,0,0],
-      [-Math.sin(ang),0,Math.cos(ang),0],
+      [1,0,0,0],
+      [0,Math.cos(ang),-Math.sin(ang),0],
+      [0,Math.sin(ang),Math.cos(ang),0],
       [0,0,0,1]
     ]);
   };
@@ -228,6 +228,9 @@
       Render.modelos = [];
       Render.poligonos = [];
       Render.vertices = [];
+    },
+    acumulate: function(matrix){
+      this.macum = matrix.prod(this.macum);
     },
 		loadFile: function(evt){
 			var f = evt.target.files[0];
@@ -311,7 +314,7 @@
 
       if ( !auto ) Render.macum = new Matriz(UI.getMatrix());
 
-      engine.MyCanvas.reset();
+      //engine.MyCanvas.reset();
 			
 			setTimeout(function(){
 				Render.lastTime = Date.now();
@@ -331,6 +334,8 @@
           polygs = Render.modelos[m].polygons;
           Render.painter(polygs,vertices);
         }
+
+        engine.MyCanvas.done();
 
         Render.busy = false;
         Render.lastTime = Date.now() - Render.lastTime;
@@ -372,6 +377,7 @@
 			this.$els.renderButton.removeAttr("disabled");
 
       this.$els.zoom = this.$els.settings.find(".btn-group.zoom");
+      this.$els.rotate = this.$els.settings.find(".btn-group.rotate");
 
       this.$els.macum = $('table#macum');
       var filas = this.$els.macum.find('tr'),
@@ -433,6 +439,11 @@
           UI.zoom(false);
       });
 
+      this.$els.rotate.on('click','button',function(e){
+        var $this = $(this);
+        UI.rotate( $this.val() );
+      });
+
 			// Dispararse en la primera dibujada
 			$(engine.MyCanvas.el).on('mousedown',UI.mouse.down);
 			$(engine.MyCanvas.el).on('mouseup',UI.mouse.up);
@@ -484,21 +495,6 @@
           Render.macum = Render.macum.suma(Matriz.getTras(x,-y,0));
           UI.setMatrix();
           Render.render(true);
-        } else if ( UI.mouse.pressed == 2 ) {
-          // Rotar
-          
-          x = (UI.mouse.endPos.x-UI.mouse.startPos.x) * 0.5;
-          y = (UI.mouse.endPos.y-UI.mouse.startPos.y) * 0.5;
-
-          // Transformar desde mouse endPos
-
-          Render.macum = Matriz.getRotX(x* Math.PI / 180).prod(Render.macum);
-          Render.macum = Matriz.getRotY(y* Math.PI / 180).prod(Render.macum);
-
-          // Transformar hasta mouse endPos
-
-          UI.setMatrix();
-          Render.render(true);
         }
 
         UI.mouse.startPos = UI.mouse.endPos;
@@ -525,6 +521,27 @@
     zoom: function(zoomin){
       var zoom = (zoomin) ? 1.2 : 0.8;
       Render.macum = Matriz.getScale(zoom).prod(Render.macum);
+      UI.setMatrix();
+      Render.render(true);
+    },
+    rotate: function(dir){
+      var cant = 5;
+      switch(dir){
+        case "up":
+          Render.acumulate(Matriz.getRotY(cant* Math.PI / 180));
+        break;
+        case "down":
+          Render.acumulate(Matriz.getRotY(-cant* Math.PI / 180));
+        break;
+        case "left":
+          Render.acumulate(Matriz.getRotX(-cant* Math.PI / 180));
+        break;
+        case "right":
+          Render.acumulate(Matriz.getRotX(cant* Math.PI / 180));
+        break;
+        default:
+          console.log("Rotacion invalida");
+      }
       UI.setMatrix();
       Render.render(true);
     },

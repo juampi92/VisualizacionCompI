@@ -6,6 +6,7 @@ var engine = {};
 
 	engine.MyCanvas = {
 		el: document.getElementById('canvas'),
+		backup: null,
 		context: null,
 		init: function(w,h){
 			this.context = this.el.getContext('2d');
@@ -20,6 +21,10 @@ var engine = {};
 				this.el.width = $parent.innerWidth() - 30;
 				this.el.height = $parent.innerHeight() - 30;
 			}
+
+			this.backup = document.createElement('canvas');
+			this.backup.width = this.el.width;
+			this.backup.height = this.el.height;
 		},
 		reset: function(){
 			this.el.width = this.el.width;
@@ -56,7 +61,7 @@ var engine = {};
 			return this.context.getImageData(0, 0, engine.MyCanvas.el.width, engine.MyCanvas.el.height);
 		},
 		drawTriangle: function(p1,p2,p3,color){
-			var ctx = engine.MyCanvas.context,
+			var ctx = this.backup.getContext('2d'),
 				h = this.el.height;
 
 			ctx.beginPath();
@@ -65,6 +70,10 @@ var engine = {};
 			ctx.lineTo(p3.x,h - p3.y);
 			ctx.fillStyle = '#' + color;
 			ctx.fill();
+		},
+		done: function(){
+			this.renderCanvas(this.backup,false);
+			this.backup.width = this.el.width;
 		}
 	};
 
