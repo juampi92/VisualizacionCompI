@@ -82,18 +82,14 @@
     // Está de espaldas. No se dibuja
     if ( vNormal.z <= 0 ) return;
 
-    var fuenteLuz = new Vertex(0, 1, 0),
-      luz = {r:200,g:200,b:100},
-      ambiente = {r:40,g:40,b:50},
-      objeto = {r:255,g:0,b:0},
-
+    var fuenteLuz = new Vertex(0, -1, 0),
+      objeto = Render.color,
       intensidadLuz = Math.max(0,Vertex.productoEscalar(fuenteLuz,vNormal.versor())),
-
       r,g,b,color;
 
-    r = (Math.max(0, intensidadLuz * (255 - ambiente.r)) + ambiente.r) >> 0;
-    g = (Math.max(0, intensidadLuz * (255 - ambiente.g)) + ambiente.g) >> 0;
-    b = (Math.max(0, intensidadLuz * (255 - ambiente.b)) + ambiente.b) >> 0;
+    r = (Math.max(0, intensidadLuz * 0.8 * objeto.r + 0.2 * objeto.r)) >> 0;
+    g = (Math.max(0, intensidadLuz * 0.8 * objeto.g + 0.2 * objeto.g)) >> 0;
+    b = (Math.max(0, intensidadLuz * 0.8 * objeto.b + 0.2 * objeto.b)) >> 0;
     
     color = engine.rgbToHex(r,g,b);
 
@@ -216,10 +212,12 @@
 		poligonos: [],
 		vertices: [],
     dims: {},
+    color: {r:255,g:0,b:0},
     macum: new Matriz(),
 		iniciate: function( fileBuffer ){
 			Render.loaded = true;
 			UI.setModelprop();
+      Render.render(true,true);
 		},
 		clear: function(){
 			Render.loaded = false;
@@ -319,7 +317,7 @@
 
       //console.log(Render.modelos);
 		},
-		render: function(auto){
+		render: function(auto,first){
 			var self = this;
 
 			//if ( !Render.loaded || Render.busy ) return alert("El Modelo está ocupado");
@@ -349,7 +347,18 @@
         }
 
         Render.dims = dimensiones;
-        console.log("1ro!");
+
+        if ( first ) {
+          var cntr = Render.getCenter(),
+            pos = {
+              x: (engine.MyCanvas.el.width - cntr.x )/2 ,
+              y: (engine.MyCanvas.el.height - cntr.y)/2
+          };
+          Render.macum = Render.macum.suma(Matriz.getTras(pos.x,pos.y,0));
+          UI.setMatrix();
+          Render.render(true);
+          return;
+        }
         
         var polygs;
         for (var m = 0, max_m = Render.modelos.length; m < max_m; m++) {
@@ -404,6 +413,9 @@
 
       this.$els.zoom = this.$els.settings.find(".btn-group.zoom");
       this.$els.rotate = this.$els.settings.find(".btn-group.rotate");
+
+      this.$els.color = this.$els.settings.find('input[type="color"]');
+      this.$els.color.val( "#" + engine.rgbToHex(Render.color.r,Render.color.g,Render.color.b) );
 
       this.$els.macum = $('table#macum');
       var filas = this.$els.macum.find('tr'),
@@ -471,6 +483,7 @@
       });
 
       this.$els.settings.find('#resetDim').on('click',UI.reset);
+      this.$els.color.on('change',UI.changeColor);
 
 			// Dispararse en la primera dibujada
 			$(engine.MyCanvas.el).on('mousedown',UI.mouse.down);
@@ -544,6 +557,10 @@
 			UI.$els.renderButton.html("Render").removeAttr("disabled");
 			$('body').removeClass('cargando');
 		},
+    changeColor: function(e){
+      Render.color = engine.hexToRGB(e.target.value);
+      Render.render(true);
+    },
     zoom: function(zoomin){
       var zoom = (zoomin) ? 1.2 : 0.8;
       Render.acumulate(Matriz.getScale(zoom),true);

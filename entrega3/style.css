@@ -269,4 +269,5 @@ canvas {
   color: wheat;
   font-weight: bold;
   overflow-x: hidden;
+  white-space: nowrap;
 }

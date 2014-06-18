@@ -509,3 +509,10 @@ var engine = {};
 	engine.rgbToHex = function(r,g,b) {
 		return ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 	};
+	engine.hexToRGB = function(hex) {
+		return {
+			r: parseInt(hex.substr(1,2),16),
+			g: parseInt(hex.substr(3,2),16),
+			b: parseInt(hex.substr(5,2),16)
+		};
+	};
