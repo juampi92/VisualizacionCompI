@@ -215,6 +215,7 @@
 		modelos: [],
 		poligonos: [],
 		vertices: [],
+    dims: {},
     macum: new Matriz(),
 		iniciate: function( fileBuffer ){
 			Render.loaded = true;
@@ -229,8 +230,20 @@
       Render.poligonos = [];
       Render.vertices = [];
     },
-    acumulate: function(matrix){
-      this.macum = matrix.prod(this.macum);
+    acumulate: function(matrix,trasl){
+      var cntr = this.getCenter(),
+        acum = this.macum;
+
+      if ( trasl ) acum = acum.suma(Matriz.getTras(-cntr.x,-cntr.y,0));
+      acum = matrix.prod(acum);
+      if ( trasl ) acum = acum.suma(Matriz.getTras(cntr.x,cntr.y,0));
+      this.macum = acum;
+    },
+    getCenter: function(){
+      return {
+        x: (this.dims.max_x - this.dims.min_x) / 2,
+        y: (this.dims.max_y - this.dims.min_y) / 2
+      };
     },
 		loadFile: function(evt){
 			var f = evt.target.files[0];
@@ -304,7 +317,7 @@
         }
       }
 
-      console.log(Render.modelos);
+      //console.log(Render.modelos);
 		},
 		render: function(auto){
 			var self = this;
@@ -321,13 +334,22 @@
 
         // Hacer algo con los vertices
         var vertices = [],
-          w = engine.MyCanvas.el.width/2,
-          h = engine.MyCanvas.el.height/2,
-          i;
+          w = engine.MyCanvas.el.width*2,
+          h = engine.MyCanvas.el.height*2,
+          dimensiones = {min_x:w,max_x:-w,min_y:h,max_y:-h},
+          vertice;
 
         for (var v = 0, max_v = Render.vertices.length; v < max_v; v++) {
-          vertices[v] = Render.vertices[v].transformar(Render.macum);
+          vertice = Render.vertices[v].transformar(Render.macum);
+          vertices[v] = vertice;
+          if ( vertice.x > dimensiones.max_x ) dimensiones.max_x = vertice.x;
+          else if ( vertice.x < dimensiones.min_x ) dimensiones.min_x = vertice.x;
+          else if ( vertice.y > dimensiones.max_y ) dimensiones.max_y = vertice.y;
+          else if ( vertice.y < dimensiones.min_y ) dimensiones.min_y = vertice.y;
         }
+
+        Render.dims = dimensiones;
+        console.log("1ro!");
         
         var polygs;
         for (var m = 0, max_m = Render.modelos.length; m < max_m; m++) {
@@ -358,6 +380,10 @@
 	};
 
 	engine.MyCanvas.init();
+
+  // -----------------------------------
+  //      User Interface
+  // -----------------------------------
 
 	var UI = {
 		$els: {},
@@ -444,6 +470,8 @@
         UI.rotate( $this.val() );
       });
 
+      this.$els.settings.find('#resetDim').on('click',UI.reset);
+
 			// Dispararse en la primera dibujada
 			$(engine.MyCanvas.el).on('mousedown',UI.mouse.down);
 			$(engine.MyCanvas.el).on('mouseup',UI.mouse.up);
@@ -518,7 +546,7 @@
 		},
     zoom: function(zoomin){
       var zoom = (zoomin) ? 1.2 : 0.8;
-      Render.macum = Matriz.getScale(zoom).prod(Render.macum);
+      Render.acumulate(Matriz.getScale(zoom),true);
       UI.setMatrix();
       Render.render(true);
     },
@@ -526,20 +554,25 @@
       var cant = 5;
       switch(dir){
         case "up":
-          Render.acumulate(Matriz.getRotY(cant* Math.PI / 180));
+          Render.acumulate(Matriz.getRotY(cant* Math.PI / 180),true);
         break;
         case "down":
-          Render.acumulate(Matriz.getRotY(-cant* Math.PI / 180));
+          Render.acumulate(Matriz.getRotY(-cant* Math.PI / 180),true);
         break;
         case "left":
-          Render.acumulate(Matriz.getRotX(-cant* Math.PI / 180));
+          Render.acumulate(Matriz.getRotX(-cant* Math.PI / 180),true);
         break;
         case "right":
-          Render.acumulate(Matriz.getRotX(cant* Math.PI / 180));
+          Render.acumulate(Matriz.getRotX(cant* Math.PI / 180),true);
         break;
         default:
           console.log("Rotacion invalida");
       }
+      UI.setMatrix();
+      Render.render(true);
+    },
+    reset: function(){
+      Render.macum = new Matriz(Matriz.identidad());
       UI.setMatrix();
       Render.render(true);
     },

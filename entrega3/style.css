@@ -231,6 +231,15 @@ h3 input[type="number"]{
   display:inline-block;
 }
 
+#resetDim {
+  cursor:pointer;
+  color:white;
+  font-size: 0.9em;
+}
+#resetDim:hover{
+  text-decoration: underline;
+}
+
 canvas {
   border:1px solid black;
 
