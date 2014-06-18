@@ -87,9 +87,9 @@
       intensidadLuz = Math.max(0,Vertex.productoEscalar(fuenteLuz,vNormal.versor())),
       r,g,b,color;
 
-    r = (Math.max(0, intensidadLuz * 0.8 * objeto.r + 0.2 * objeto.r)) >> 0;
-    g = (Math.max(0, intensidadLuz * 0.8 * objeto.g + 0.2 * objeto.g)) >> 0;
-    b = (Math.max(0, intensidadLuz * 0.8 * objeto.b + 0.2 * objeto.b)) >> 0;
+    r = (Math.max(0, intensidadLuz * 0.9 * objeto.r + 0.1 * objeto.r)) >> 0;
+    g = (Math.max(0, intensidadLuz * 0.9 * objeto.g + 0.1 * objeto.g)) >> 0;
+    b = (Math.max(0, intensidadLuz * 0.9 * objeto.b + 0.1 * objeto.b)) >> 0;
     
     color = engine.rgbToHex(r,g,b);
 
@@ -240,7 +240,8 @@
     getCenter: function(){
       return {
         x: (this.dims.max_x - this.dims.min_x) / 2,
-        y: (this.dims.max_y - this.dims.min_y) / 2
+        y: (this.dims.max_y - this.dims.min_y) / 2,
+        z: (this.dims.max_z - this.dims.min_z) / 2
       };
     },
 		loadFile: function(evt){
@@ -334,7 +335,7 @@
         var vertices = [],
           w = engine.MyCanvas.el.width*2,
           h = engine.MyCanvas.el.height*2,
-          dimensiones = {min_x:w,max_x:-w,min_y:h,max_y:-h},
+          dimensiones = {min_x:w,max_x:-w,min_y:h,max_y:-h,min_z:-999,max_z:999},
           vertice;
 
         for (var v = 0, max_v = Render.vertices.length; v < max_v; v++) {
@@ -344,15 +345,19 @@
           else if ( vertice.x < dimensiones.min_x ) dimensiones.min_x = vertice.x;
           else if ( vertice.y > dimensiones.max_y ) dimensiones.max_y = vertice.y;
           else if ( vertice.y < dimensiones.min_y ) dimensiones.min_y = vertice.y;
+          else if ( vertice.z > dimensiones.max_z ) dimensiones.max_z = vertice.z;
+          else if ( vertice.z < dimensiones.min_z ) dimensiones.min_z = vertice.z;
         }
 
         Render.dims = dimensiones;
+        //console.log(dimensiones);
 
         if ( first ) {
           var cntr = Render.getCenter(),
             pos = {
-              x: (engine.MyCanvas.el.width - cntr.x )/2 ,
-              y: (engine.MyCanvas.el.height - cntr.y)/2
+              x: (engine.MyCanvas.el.width/2 - cntr.x) ,
+              y: (engine.MyCanvas.el.height/2 - cntr.y) ,
+              z: cntr.z
           };
           Render.macum = Render.macum.suma(Matriz.getTras(pos.x,pos.y,0));
           UI.setMatrix();
